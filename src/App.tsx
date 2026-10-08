@@ -347,17 +347,18 @@ export default function App() {
   for (let m = viewStart; m <= END; m += 60) hours.push(m);
 
   // lane offsets so drinks at the same time never sit on top of each other
-  const laneOf = useMemo(() => {
+  const laneAlloc = (list: { uid: string; minutes: number }[]) => {
     const last: number[] = [];
     const map = new Map<string, number>();
-    for (const p of [...placed].sort((a, b) => a.minutes - b.minutes)) {
+    for (const p of [...list].sort((a, b) => a.minutes - b.minutes)) {
       let lane = last.findIndex((t) => Math.abs(p.minutes - t) > 55);
       if (lane === -1) { lane = Math.min(last.length, 3); if (lane === last.length) last.push(-1e9); }
       last[lane] = p.minutes;
       map.set(p.uid, lane);
     }
     return map;
-  }, [placed]);
+  };
+  const laneOf = useMemo(() => laneAlloc(placed), [placed]);
 
   const fireflies = useMemo(
     () => Array.from({ length: 14 }, (_, i) => ({ x: (i * 37.7 + 13) % 100, y: (i * 23.3 + 7) % 100, o: 0.3 + ((i * 11) % 40) / 100, d: (i * 1.7) % 9, dur: 6 + (i % 4) * 2.3 })),
@@ -368,16 +369,54 @@ export default function App() {
 
   // trails are drawn in real pixels so they actually reach the ghost.
   // wide screens spread simultaneous drinks across lanes; narrow screens
-  // stack them in rows so every chip stays fully readable
+  // pack them into rows measured from rendered bounds, so nothing can
+  // overlap and nothing leaves the column
   const laneStep = 104;
   const rowStep = 38;
+  const packRows = (list: { uid: string; minutes: number }[]) => {
+    const sorted = list.filter((p) => p.minutes >= viewStart).sort((a, b) => a.minutes - b.minutes);
+    const ys = new Map<string, number>();
+    let prev = -Infinity;
+    for (const p of sorted) {
+      const y = Math.max((pct(p.minutes) / 100) * colSize.h, prev + rowStep);
+      ys.set(p.uid, y);
+      prev = y;
+    }
+    if (sorted.length && prev > colSize.h - 8) {
+      let next = colSize.h - 8;
+      for (let i = sorted.length - 1; i >= 0; i--) {
+        const uid = sorted[i].uid;
+        const y = Math.min(ys.get(uid)!, next);
+        ys.set(uid, y);
+        next = y - rowStep;
+      }
+    }
+    return ys;
+  };
+  const rowY = useMemo(
+    () => (narrow && colSize.h > 0 ? packRows(placed) : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [narrow, placed, viewStart, colSize.h]
+  );
+  // one candidate layout drives the landing outline, the preview trail
+  // and the committed position, so a drop lands where it promised
+  const landPreview = drag?.snap != null ? (() => {
+    const list = [
+      ...placed.filter((p) => !(drag.type === "move" && p.uid === drag.uid)),
+      { uid: "__land", minutes: drag.snap! },
+    ];
+    if (narrow && colSize.h > 0) return { y: packRows(list).get("__land")!, lane: 0 };
+    return { y: (pct(drag.snap!) / 100) * colSize.h, lane: laneAlloc(list).get("__land") ?? 0 };
+  })() : null;
+  const kbRowY = kbCursor && narrow && colSize.h > 0
+    ? packRows([...placed, { uid: "__k", minutes: kbCursor.minutes }]).get("__k")!
+    : kbCursor ? (pct(kbCursor.minutes) / 100) * colSize.h : 0;
   const bedY = (bedPct / 100) * colSize.h;
-  const trailD = (m: number, lane: number) => {
-    const y = (pct(m) / 100) * colSize.h + (narrow ? lane * rowStep : 0);
-    const x = narrow ? 110 : 64 + lane * laneStep + 46;
+  const trailD = (y: number, x: number) => {
     const tx = colSize.w * 0.5;
     return `M ${x} ${y} C ${x + (tx - x) * 0.32} ${y + 44}, ${tx - 70} ${bedY - 78}, ${tx} ${bedY - 16}`;
   };
+  const trailX = (lane: number) => (narrow ? 110 : 64 + lane * laneStep + 46);
 
   return (
     <div className={`app ${bloom ? "bloom" : ""} ${guideOn ? "guide-on" : ""}`}>
@@ -512,7 +551,7 @@ export default function App() {
               {placed.filter((p) => p.minutes <= bedtime && p.minutes >= viewStart).map((p) => (
                 <g key={p.uid}>
                   <path
-                    d={trailD(p.minutes, laneOf.get(p.uid) ?? 0)}
+                    d={trailD(rowY?.get(p.uid) ?? (pct(p.minutes) / 100) * colSize.h, trailX(laneOf.get(p.uid) ?? 0))}
                     fill="none" stroke="url(#trailGrad)" strokeWidth="1.5"
                     strokeDasharray="3 8" strokeLinecap="round" opacity="0.7"
                   />
@@ -522,10 +561,10 @@ export default function App() {
                   />
                 </g>
               ))}
-              {drag?.snap != null && (
+              {drag?.snap != null && landPreview && (
                 <path
                   className="preview"
-                  d={trailD(drag.snap, 0)}
+                  d={trailD(landPreview.y, trailX(landPreview.lane))}
                   fill="none" stroke="#f0a95c" strokeWidth="1.5"
                   strokeDasharray="2 9" strokeLinecap="round" opacity="0.9"
                 />
@@ -533,7 +572,7 @@ export default function App() {
               {kbCursor && (
                 <path
                   className="preview"
-                  d={trailD(kbCursor.minutes, 0)}
+                  d={trailD(kbRowY, trailX(0))}
                   fill="none" stroke="#f0a95c" strokeWidth="1.5"
                   strokeDasharray="2 9" strokeLinecap="round" opacity="0.9"
                 />
@@ -549,10 +588,9 @@ export default function App() {
                 key={p.uid}
                 data-uid={p.uid}
                 className={`placed ${p.minutes > bedtime ? "in-night" : ""} ${drag?.type === "move" && drag.uid === p.uid ? "drag-src" : ""}`}
-                style={{
-                  top: `calc(${pct(p.minutes)}% + ${narrow ? lane * rowStep : 0}px)`,
-                  left: `calc(64px + ${narrow ? 0 : lane * laneStep}px)`,
-                }}
+                style={narrow
+                  ? { top: `${rowY?.get(p.uid) ?? (pct(p.minutes) / 100) * colSize.h}px`, left: "64px" }
+                  : { top: `${pct(p.minutes)}%`, left: `calc(64px + ${lane * laneStep}px)` }}
                 tabIndex={0}
                 role="button"
                 aria-label={`${d.name} at ${fmtTime(p.minutes)}. Arrows move, Delete removes.`}
@@ -569,24 +607,20 @@ export default function App() {
             );
           })}
 
-          {drag?.snap != null && (() => {
-            const landLane = Math.min(3, placed.filter((p) => p.uid !== (drag.type === "move" ? drag.uid : "") && Math.abs(p.minutes - drag.snap!) <= 55).length);
-            return (
+          {drag?.snap != null && landPreview && (
             <>
-              <div className="slotline" style={{ top: `${pct(drag.snap)}%` }} />
-              <div className="slottime drag-time" style={{ top: `${pct(drag.snap)}%` }}>{fmtTime(drag.snap)}</div>
-              <div className="placed landing" style={{
-                top: `calc(${pct(drag.snap)}% + ${narrow ? landLane * rowStep : 0}px)`,
-                left: `calc(64px + ${narrow ? 0 : landLane * laneStep}px)`,
-              }}>
+              <div className="slotline" style={{ top: narrow ? `${landPreview.y}px` : `${pct(drag.snap)}%` }} />
+              <div className="slottime drag-time" style={{ top: narrow ? `${landPreview.y}px` : `${pct(drag.snap)}%` }}>{fmtTime(drag.snap)}</div>
+              <div className="placed landing" style={narrow
+                ? { top: `${landPreview.y}px`, left: "64px" }
+                : { top: `${pct(drag.snap)}%`, left: `calc(64px + ${landPreview.lane * laneStep}px)` }}>
                 <span className="chip">
                   {DRINKS.find((d) => d.id === activeChipDrink)?.name}
                   <span className="mg">{DRINKS.find((d) => d.id === activeChipDrink)?.mg}<span className="unit">mg</span></span>
                 </span>
               </div>
             </>
-            );
-          })()}
+          )}
           {kbCursor && (
             <>
               <div className="slotline" style={{ top: `${pct(kbCursor.minutes)}%` }} />
