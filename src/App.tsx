@@ -352,7 +352,7 @@ export default function App() {
     const map = new Map<string, number>();
     for (const p of [...placed].sort((a, b) => a.minutes - b.minutes)) {
       let lane = last.findIndex((t) => Math.abs(p.minutes - t) > 55);
-      if (lane === -1) { lane = Math.min(last.length, 2); if (lane === last.length) last.push(-1e9); }
+      if (lane === -1) { lane = Math.min(last.length, 3); if (lane === last.length) last.push(-1e9); }
       last[lane] = p.minutes;
       map.set(p.uid, lane);
     }
@@ -366,12 +366,15 @@ export default function App() {
 
   const activeChipDrink = drag?.type === "shelf" ? drag.drinkId : drag?.type === "move" ? placed.find((p) => p.uid === (drag as { uid: string }).uid)?.drinkId : kbCursor?.drinkId;
 
-  // trails are drawn in real pixels so they actually reach the ghost
-  const laneStep = narrow ? 58 : 104;
+  // trails are drawn in real pixels so they actually reach the ghost.
+  // wide screens spread simultaneous drinks across lanes; narrow screens
+  // stack them in rows so every chip stays fully readable
+  const laneStep = 104;
+  const rowStep = 38;
   const bedY = (bedPct / 100) * colSize.h;
   const trailD = (m: number, lane: number) => {
-    const y = (pct(m) / 100) * colSize.h;
-    const x = 64 + lane * laneStep + 46;
+    const y = (pct(m) / 100) * colSize.h + (narrow ? lane * rowStep : 0);
+    const x = narrow ? 110 : 64 + lane * laneStep + 46;
     const tx = colSize.w * 0.5;
     return `M ${x} ${y} C ${x + (tx - x) * 0.32} ${y + 44}, ${tx - 70} ${bedY - 78}, ${tx} ${bedY - 16}`;
   };
@@ -499,7 +502,7 @@ export default function App() {
           <div className="ground" style={{ top: `calc(${bedPct}% + 34px)` }} />
 
           {colSize.w > 0 && (
-            <svg className="trails" viewBox={`0 0 ${colSize.w} ${colSize.h}`}>
+            <svg key={viewStart} className="trails" viewBox={`0 0 ${colSize.w} ${colSize.h}`}>
               <defs>
                 <linearGradient id="trailGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="#f0a95c" stopOpacity="0.85" />
@@ -540,12 +543,16 @@ export default function App() {
 
           {placed.filter((p) => p.minutes >= viewStart).map((p) => {
             const d = DRINKS.find((x) => x.id === p.drinkId)!;
+            const lane = laneOf.get(p.uid) ?? 0;
             return (
               <div
                 key={p.uid}
                 data-uid={p.uid}
                 className={`placed ${p.minutes > bedtime ? "in-night" : ""} ${drag?.type === "move" && drag.uid === p.uid ? "drag-src" : ""}`}
-                style={{ top: `${pct(p.minutes)}%`, left: `calc(64px + ${(laneOf.get(p.uid) ?? 0) * laneStep}px)` }}
+                style={{
+                  top: `calc(${pct(p.minutes)}% + ${narrow ? lane * rowStep : 0}px)`,
+                  left: `calc(64px + ${narrow ? 0 : lane * laneStep}px)`,
+                }}
                 tabIndex={0}
                 role="button"
                 aria-label={`${d.name} at ${fmtTime(p.minutes)}. Arrows move, Delete removes.`}
@@ -562,18 +569,24 @@ export default function App() {
             );
           })}
 
-          {drag?.snap != null && (
+          {drag?.snap != null && (() => {
+            const landLane = Math.min(3, placed.filter((p) => p.uid !== (drag.type === "move" ? drag.uid : "") && Math.abs(p.minutes - drag.snap!) <= 55).length);
+            return (
             <>
               <div className="slotline" style={{ top: `${pct(drag.snap)}%` }} />
               <div className="slottime drag-time" style={{ top: `${pct(drag.snap)}%` }}>{fmtTime(drag.snap)}</div>
-              <div className="placed landing" style={{ top: `${pct(drag.snap)}%`, left: "64px" }}>
+              <div className="placed landing" style={{
+                top: `calc(${pct(drag.snap)}% + ${narrow ? landLane * rowStep : 0}px)`,
+                left: `calc(64px + ${narrow ? 0 : landLane * laneStep}px)`,
+              }}>
                 <span className="chip">
                   {DRINKS.find((d) => d.id === activeChipDrink)?.name}
                   <span className="mg">{DRINKS.find((d) => d.id === activeChipDrink)?.mg}<span className="unit">mg</span></span>
                 </span>
               </div>
             </>
-          )}
+            );
+          })()}
           {kbCursor && (
             <>
               <div className="slotline" style={{ top: `${pct(kbCursor.minutes)}%` }} />

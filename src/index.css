@@ -371,6 +371,10 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 }
 .ghostscore.preview { color: var(--amber); text-shadow: 0 0 16px rgba(240, 169, 92, 0.45); }
 
+/* trails fade back in while chips glide to the remapped range */
+.trails { animation: trailfade 0.4s ease both; }
+@keyframes trailfade { from { opacity: 0; } to { opacity: 1; } }
+
 /* empty night */
 .empty-night {
   position: absolute; left: 0; right: 0; top: 14px;
@@ -563,7 +567,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .trails path { animation: none; }
+  .trails, .trails path { animation: none; }
   .guide-ring { animation: none; }
   .ghostspot { transition: none; }
   .firefly, .fogband, .dormant { animation: none; }
