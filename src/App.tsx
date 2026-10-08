@@ -374,8 +374,10 @@ export default function App() {
           </button>
         </div>
         <div className="scoreblock">
-          <div className="score-num"><NumberFlow value={score} suffix="%" /></div>
-          <div className="score-label">haunted tonight</div>
+          <div className={`score-num ${drag?.snap != null ? "preview" : ""}`}>
+            <NumberFlow value={drag?.snap != null ? previewScore(drag, drag.snap) : score} suffix="%" />
+          </div>
+          <div className="score-label">{drag?.snap != null ? "if you drop it here" : "haunted tonight"}</div>
           {residual >= 1 && <div className="score-mg">≈{Math.round(residual)}mg still circulating</div>}
         </div>
       </header>
@@ -409,6 +411,7 @@ export default function App() {
             </div>
             <div className="setting" style={{ marginTop: 10 }}>
               <span className="rail-label">your liver</span>
+              <span className="val livername">{liver}</span>
               <span className="moondial" role="group" aria-label="caffeine metabolism speed">
                 {(["fast", "average", "slow"] as const).map((l, i) => (
                   <button key={l} className="moonstop" aria-pressed={liver === l} title={`${l} · half-life ${HALF_LIVES[l]}h`}
@@ -467,12 +470,17 @@ export default function App() {
                 </linearGradient>
               </defs>
               {placed.filter((p) => p.minutes <= bedtime).map((p) => (
-                <path
-                  key={p.uid}
-                  d={trailD(p.minutes, laneOf.get(p.uid) ?? 0)}
-                  fill="none" stroke="url(#trailGrad)" strokeWidth="1.5"
-                  strokeDasharray="3 8" strokeLinecap="round" opacity="0.7"
-                />
+                <g key={p.uid}>
+                  <path
+                    d={trailD(p.minutes, laneOf.get(p.uid) ?? 0)}
+                    fill="none" stroke="url(#trailGrad)" strokeWidth="1.5"
+                    strokeDasharray="3 8" strokeLinecap="round" opacity="0.7"
+                  />
+                  <circle
+                    cx={colSize.w * 0.5} cy={bedY - 16} r="3.2"
+                    fill="#a9e8dc" opacity="0.65"
+                  />
+                </g>
               ))}
               {drag?.snap != null && (
                 <path
@@ -520,13 +528,19 @@ export default function App() {
           {drag?.snap != null && (
             <>
               <div className="slotline" style={{ top: `${pct(drag.snap)}%` }} />
-              <div className="slottime" style={{ top: `${pct(drag.snap)}%` }}>{fmtTime(drag.snap)}</div>
+              <div className="slottime drag-time" style={{ top: `${pct(drag.snap)}%` }}>{fmtTime(drag.snap)}</div>
+              <div className="placed landing" style={{ top: `${pct(drag.snap)}%`, left: "64px" }}>
+                <span className="chip">
+                  {DRINKS.find((d) => d.id === activeChipDrink)?.name}
+                  <span className="mg">{DRINKS.find((d) => d.id === activeChipDrink)?.mg}<span className="unit">mg</span></span>
+                </span>
+              </div>
             </>
           )}
           {kbCursor && (
             <>
               <div className="slotline" style={{ top: `${pct(kbCursor.minutes)}%` }} />
-              <div className="slottime" style={{ top: `${pct(kbCursor.minutes)}%` }}>{fmtTime(kbCursor.minutes)} · {matchMedia("(pointer: coarse)").matches ? "tap the day to drop" : "↓↑ to move, ⏎ to drop"}</div>
+              <div className="slottime" style={{ top: `${pct(kbCursor.minutes)}%` }}>{DRINKS.find((d) => d.id === kbCursor.drinkId)?.name} · {fmtTime(kbCursor.minutes)} · {matchMedia("(pointer: coarse)").matches ? "tap the day to drop" : "↓↑ to move, ⏎ to drop"}</div>
             </>
           )}
 
@@ -552,7 +566,10 @@ export default function App() {
             <Ghost state={ghostState.current} />
           </div>
 
-          {score < 5 && (
+          {placed.length === 0 && !drag && !kbCursor && (
+            <div className="drop-hint" style={{ top: "38%" }}>drop a drink here</div>
+          )}
+          {score < 5 && !drag && !kbCursor && (
             <div className="empty-night" style={{ top: `calc(${bedPct}% + 48px)` }}>
               {placed.length === 0 ? "nothing is haunting you yet. the drinks are on the shelf." : "the night is clear."}
             </div>

@@ -40,14 +40,15 @@ export function Ghost({ state }: { state: GhostState }) {
       <radialGradient id="ncBody" cx="50%" cy="26%" r="82%">
         <stop offset="0%" stop-color="#cdf7ee" stop-opacity="0.98"/>
         <stop offset="45%" stop-color="#a9e8dc" stop-opacity="0.72"/>
-        <stop offset="100%" stop-color="#a9e8dc" stop-opacity="0.05"/>
+        <stop offset="88%" stop-color="#a9e8dc" stop-opacity="0.22"/>
+        <stop offset="100%" stop-color="#a9e8dc" stop-opacity="0.02"/>
       </radialGradient>
       <radialGradient id="ncAura" cx="50%" cy="50%" r="50%">
         <stop offset="0%" stop-color="#a9e8dc" stop-opacity="0.30"/>
         <stop offset="70%" stop-color="#a9e8dc" stop-opacity="0.08"/>
         <stop offset="100%" stop-color="#a9e8dc" stop-opacity="0"/>
       </radialGradient>
-      <filter id="ncSoft"><feGaussianBlur stdDeviation="1.1"/></filter>`;
+      <filter id="ncSoft"><feGaussianBlur stdDeviation="0.55"/></filter>`;
     const aura = mk<SVGEllipseElement>("ellipse", { fill: "url(#ncAura)" });
     const edge = mk<SVGPathElement>("path", {
       fill: "none", stroke: "#cdf7ee", "stroke-width": "1.4",
@@ -57,7 +58,12 @@ export function Ghost({ state }: { state: GhostState }) {
     const eyeL = mk<SVGEllipseElement>("ellipse", { fill: "#0b0e1a", opacity: "0" });
     const eyeR = mk<SVGEllipseElement>("ellipse", { fill: "#0b0e1a", opacity: "0" });
     const mouth = mk<SVGEllipseElement>("ellipse", { fill: "#0b0e1a", opacity: "0" });
-    svg.append(defs, aura, edge, body, eyeL, eyeR, mouth);
+    // a faint content smile while the haunting is still small
+    const smile = mk<SVGPathElement>("path", {
+      fill: "none", stroke: "#0b0e1a", "stroke-width": "2.2",
+      "stroke-linecap": "round", opacity: "0",
+    });
+    svg.append(defs, aura, edge, body, eyeL, eyeR, mouth, smile);
 
     // animation state kept across frames
     let appear = 0; // 0 hidden -> 1 fully present
@@ -132,10 +138,10 @@ export function Ghost({ state }: { state: GhostState }) {
       edge.setAttribute("stroke-dashoffset", String(-edgeDash));
 
       // --- opacity by mode ---
-      const flicker = s.mode === "premonition" && motion ? 0.55 + 0.45 * Math.sin(w * 11) : 1;
+      const flicker = s.mode === "premonition" && motion ? 0.72 + 0.28 * Math.sin(w * 6.5) : 1;
       const bodyOp = clamp01(appear * (0.28 + h * 0.72) * flicker);
       body.setAttribute("opacity", bodyOp.toFixed(3));
-      edge.setAttribute("opacity", (bodyOp * (s.mode === "premonition" ? 0.9 : 0.35)).toFixed(3));
+      edge.setAttribute("opacity", (bodyOp * (s.mode === "premonition" ? 0.9 : 0.55)).toFixed(3));
       aura.setAttribute("cx", "80");
       aura.setAttribute("cy", "95");
       aura.setAttribute("rx", String(78 + h * 30));
@@ -168,9 +174,13 @@ export function Ghost({ state }: { state: GhostState }) {
       mouth.setAttribute("cy", String(ey + 26));
       mouth.setAttribute("rx", "4.2"); mouth.setAttribute("ry", String(6 + h * 3));
       mouth.setAttribute("opacity", mOp.toFixed(3));
+      // low haunt: a faint content smile instead of the worried mouth
+      const sOp = h <= 0.4 && !s.idle ? bodyOp * 0.5 : 0;
+      smile.setAttribute("d", `M ${ex - 8} ${ey + 24} Q ${ex} ${ey + 31} ${ex + 8} ${ey + 24}`);
+      smile.setAttribute("opacity", sOp.toFixed(3));
 
       const tx = `translate(${80 + jitX} ${100 + breathe + loom * 9}) rotate(${lean * 0.4 + jitX * 0.3} 80 130) scale(${scale}) translate(-80 -100)`;
-      for (const el of [aura, edge, body, eyeL, eyeR, mouth]) {
+      for (const el of [aura, edge, body, eyeL, eyeR, mouth, smile]) {
         el.setAttribute("transform", tx);
       }
       raf = requestAnimationFrame(tick);
