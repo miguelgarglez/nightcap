@@ -376,19 +376,24 @@ export default function App() {
   const packRows = (list: { uid: string; minutes: number }[]) => {
     const sorted = list.filter((p) => p.minutes >= viewStart).sort((a, b) => a.minutes - b.minutes);
     const ys = new Map<string, number>();
+    // bound by rendered chip edges, not just centers
+    const minY = 24;
+    const maxY = colSize.h - 30;
+    // compress spacing when a day holds more drinks than full rows fit
+    const step = sorted.length > 1 ? Math.max(24, Math.min(rowStep, (maxY - minY) / (sorted.length - 1))) : rowStep;
     let prev = -Infinity;
     for (const p of sorted) {
-      const y = Math.max((pct(p.minutes) / 100) * colSize.h, prev + rowStep);
+      const y = Math.max(minY, Math.max((pct(p.minutes) / 100) * colSize.h, prev + step));
       ys.set(p.uid, y);
       prev = y;
     }
-    if (sorted.length && prev > colSize.h - 8) {
-      let next = colSize.h - 8;
+    if (sorted.length && prev > maxY) {
+      let next = maxY;
       for (let i = sorted.length - 1; i >= 0; i--) {
         const uid = sorted[i].uid;
         const y = Math.min(ys.get(uid)!, next);
         ys.set(uid, y);
-        next = y - rowStep;
+        next = y - step;
       }
     }
     return ys;
@@ -401,10 +406,11 @@ export default function App() {
   // one candidate layout drives the landing outline, the preview trail
   // and the committed position, so a drop lands where it promised
   const landPreview = drag?.snap != null ? (() => {
-    const list = [
-      ...placed.filter((p) => !(drag.type === "move" && p.uid === drag.uid)),
-      { uid: "__land", minutes: drag.snap! },
-    ];
+    // replace the moved drink in place so preview and commit share the
+    // same candidate ordering; a shelf drop appends, exactly like commit
+    const list = drag.type === "move"
+      ? placed.map((p) => p.uid === drag.uid ? { uid: "__land", minutes: drag.snap! } : p)
+      : [...placed, { uid: "__land", minutes: drag.snap! }];
     if (narrow && colSize.h > 0) return { y: packRows(list).get("__land")!, lane: 0 };
     return { y: (pct(drag.snap!) / 100) * colSize.h, lane: laneAlloc(list).get("__land") ?? 0 };
   })() : null;
