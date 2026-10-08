@@ -32,6 +32,8 @@ in percent.
   haunting — drinks, bedtime, liver and all.
 - Optional sound (off by default): a breath when the ghost condenses,
   a porcelain tap when a drink lands, a relieved sigh when it dissolves.
+- Poured a drink out by mistake? A toast offers to put it back.
+- On touch screens: tap a drink to arm it, then tap the day to place it.
 
 ## The ghost
 
@@ -39,8 +41,8 @@ The ghost is drawn fresh every frame in a single SVG, driven by a mutable
 state object on `requestAnimationFrame` — no React re-renders, just
 transforms and path math. It watches your cursor for a couple of seconds,
 then politely looks away. It blinks. Past 55% haunted it grows a small,
-worried mouth. Past 400mg of total caffeine it starts to jitter and the
-verdict turns medical.
+worried mouth. Past 60% it leans over the bed line and narrows its eyes.
+Past 400mg of total caffeine it starts to jitter.
 
 ## Keyboard
 
@@ -66,8 +68,11 @@ No backend, no tracking, no cost. Pure client-side math.
   `pointermove`/`pointerup` on `window` so the cursor can leave the column
   and the preview still works.
 - **number-flow** morphs the score digits; **torph** morphs the verdict text.
-- **web-haptics** fires subtle haptics on drops (where supported).
-- `prefers-reduced-motion` calms the ghost's breathing, jitter and trails.
+- **web-haptics** fires subtle haptics on drops and bedtime detents (where supported).
+- `prefers-reduced-motion` calms the ghost's breathing, jitter, trails,
+  fireflies and tray motion.
+- Caffeine trails are drawn in real pixels against the measured column, so
+  each thread actually lands on the ghost.
 - The share card is drawn on a `<canvas>` in the product's own palette and
   exported as PNG — no image service involved.
 - Google Fonts: Almendra (voice), Instrument Sans (UI),
