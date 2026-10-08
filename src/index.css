@@ -13,6 +13,7 @@
   --bone-dim: #8f887a;
   --violet: #6c5ce7;
   --violet-hi: #9a8ff0;
+  --violet-dim: rgba(108, 92, 231, 0.45);
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-spring: cubic-bezier(0.34, 1.4, 0.44, 1);
   --font-display: "Almendra", serif;
