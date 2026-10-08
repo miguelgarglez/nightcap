@@ -93,7 +93,7 @@ export function Ghost({ state }: { state: GhostState }) {
 
       const agitation = s.overdose ? 1.6 : 0.25 + h * 0.75;
       const breathe = n1(w * 0.55) * (s.idle ? 2 : 3.2) * motion;
-      const jitX = s.overdose ? n1(w * 13) * 2.4 : n1(w * 0.8 + 9) * 1.1 * motion;
+      const jitX = (s.overdose ? n1(w * 13) * 2.4 : n1(w * 0.8 + 9) * 1.1) * motion;
       const baseScale = 0.42 + h * 0.78;
       const scale = baseScale * (s.mode === "premonition" ? 0.96 : 1) * (0.98 + 0.04 * Math.sin(w * 1.1) * motion);
 
@@ -126,7 +126,7 @@ export function Ghost({ state }: { state: GhostState }) {
       edge.setAttribute("stroke-dashoffset", String(-edgeDash));
 
       // --- opacity by mode ---
-      const flicker = s.mode === "premonition" ? 0.55 + 0.45 * Math.sin(w * 11) : 1;
+      const flicker = s.mode === "premonition" && motion ? 0.55 + 0.45 * Math.sin(w * 11) : 1;
       const bodyOp = clamp01(appear * (0.28 + h * 0.72) * flicker);
       body.setAttribute("opacity", bodyOp.toFixed(3));
       edge.setAttribute("opacity", (bodyOp * (s.mode === "premonition" ? 0.9 : 0.35)).toFixed(3));
@@ -170,7 +170,10 @@ export function Ghost({ state }: { state: GhostState }) {
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+    return () => {
+      cancelAnimationFrame(raf);
+      svg.replaceChildren();
+    };
   }, [state]);
 
   return (

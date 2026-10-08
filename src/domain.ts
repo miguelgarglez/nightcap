@@ -4,7 +4,6 @@ export type Drink = {
   id: string;
   name: string;
   mg: number;
-  vessel: "cup" | "bottle" | "can" | "glass" | "shot";
   note: string; // one dry line of copy
 };
 
@@ -31,17 +30,17 @@ export const MAX_BED = 26 * 60;
 export const OVERDOSE_MG = 400;
 
 export const DRINKS: Drink[] = [
-  { id: "espresso", name: "espresso", mg: 63, vessel: "cup", note: "small, dark, consequences" },
-  { id: "doppio", name: "doppio", mg: 126, vessel: "cup", note: "twice the problem, same cup" },
-  { id: "brewed", name: "brewed", mg: 95, vessel: "cup", note: "the honest one" },
-  { id: "coldbrew", name: "cold brew", mg: 200, vessel: "bottle", note: "it seemed so innocent" },
-  { id: "latte", name: "latte", mg: 75, vessel: "cup", note: "milk cannot save you" },
-  { id: "matcha", name: "matcha", mg: 70, vessel: "cup", note: "calm, green, persistent" },
-  { id: "blacktea", name: "black tea", mg: 47, vessel: "cup", note: "polite but present" },
-  { id: "greentea", name: "green tea", mg: 28, vessel: "cup", note: "barely a whisper" },
-  { id: "energy", name: "energy drink", mg: 80, vessel: "can", note: "the can is sweating" },
-  { id: "cola", name: "cola", mg: 46, vessel: "glass", note: "lunch's quiet accomplice" },
-  { id: "decaf", name: "decaf", mg: 3, vessel: "cup", note: "a placebo with manners" },
+  { id: "espresso", name: "espresso", mg: 63, note: "small, dark, consequences" },
+  { id: "doppio", name: "doppio", mg: 126, note: "twice the problem, same cup" },
+  { id: "brewed", name: "brewed", mg: 95, note: "the honest one" },
+  { id: "coldbrew", name: "cold brew", mg: 200, note: "it seemed so innocent" },
+  { id: "latte", name: "latte", mg: 75, note: "milk cannot save you" },
+  { id: "matcha", name: "matcha", mg: 70, note: "calm, green, persistent" },
+  { id: "blacktea", name: "black tea", mg: 47, note: "polite but present" },
+  { id: "greentea", name: "green tea", mg: 28, note: "barely a whisper" },
+  { id: "energy", name: "energy drink", mg: 80, note: "the can is sweating" },
+  { id: "cola", name: "cola", mg: 46, note: "lunch's quiet accomplice" },
+  { id: "decaf", name: "decaf", mg: 3, note: "a placebo with manners" },
 ];
 
 export const drinkById = (id: string) => DRINKS.find((d) => d.id === id)!;
@@ -50,7 +49,7 @@ export const drinkById = (id: string) => DRINKS.find((d) => d.id === id)!;
 export function residualAt(placed: PlacedDrink[], t: number, halfLifeH: number): number {
   let r = 0;
   for (const p of placed) {
-    if (p.minutes < t) r += drinkById(p.drinkId).mg * Math.pow(0.5, (t - p.minutes) / (halfLifeH * 60));
+    if (p.minutes <= t) r += drinkById(p.drinkId).mg * Math.pow(0.5, (t - p.minutes) / (halfLifeH * 60));
   }
   return r;
 }
@@ -98,7 +97,7 @@ export function decodeState(hash: string): SceneState | null {
     return {
       placed,
       bedtime: bed >= MIN_BED && bed <= MAX_BED ? bed : DEFAULT_BEDTIME,
-      liver: liver in HALF_LIVES ? liver : "average",
+      liver: liver === "fast" || liver === "average" || liver === "slow" ? liver : "average",
     };
   } catch {
     return null;

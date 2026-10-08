@@ -131,6 +131,7 @@ export function ShareTray({
   onClose: () => void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
   const [img, setImg] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -139,6 +140,12 @@ export function ShareTray({
       drawCard(canvasRef.current!, state, score, verdict);
       setImg(canvasRef.current!.toDataURL("image/png"));
     });
+  }, []);
+
+  useEffect(() => {
+    const d = dialogRef.current!;
+    d.showModal();
+    return () => { if (d.open) d.close(); };
   }, []);
 
   const download = () => {
@@ -151,17 +158,23 @@ export function ShareTray({
   };
 
   return (
-    <div className="tray-wrap" role="dialog" aria-label="share your haunting">
-      <div className="tray-veil" onClick={onClose} />
+    <dialog
+      ref={dialogRef}
+      className="tray-dialog"
+      aria-label="share your haunting"
+      onCancel={(e) => { e.preventDefault(); onClose(); }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
       <div className="tray">
         {img ? <img src={img} alt="your certificate of haunting" /> : <div style={{ aspectRatio: "4/5" }} />}
         <canvas ref={canvasRef} style={{ display: "none" }} />
         <div className="tray-actions">
-          <button className="tray-btn" onClick={download} disabled={!img}>download card</button>
+          <button className="tray-btn" onClick={download} disabled={!img} autoFocus>download card</button>
           <button className="tray-btn" onClick={copyLink}>{copied ? "copied!" : "copy link"}</button>
+          <button className="tray-btn tray-close" onClick={onClose} aria-label="close">×</button>
         </div>
         <div className="tray-note">the link carries your exact haunting: drinks, bedtime, liver and all.</div>
       </div>
-    </div>
+    </dialog>
   );
 }

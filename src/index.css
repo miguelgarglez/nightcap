@@ -102,6 +102,11 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   cursor: grab; user-select: none; touch-action: none;
   transition: transform 150ms var(--ease-out), border-color 150ms, box-shadow 200ms;
 }
+/* on touch layouts the shelf scrolls horizontally — let pan-x scroll win;
+   a vertical pull still starts the drag toward the column */
+@media (pointer: coarse) {
+  .shelf .chip { touch-action: pan-x; }
+}
 .chip:hover { border-color: var(--amber-dim); box-shadow: 0 2px 0 rgba(0,0,0,0.35), 0 0 14px -4px rgba(240, 169, 92, 0.3); }
 .chip:active { transform: scale(0.97); cursor: grabbing; }
 .chip .mg { color: var(--amber); font-size: 10px; }
@@ -306,10 +311,12 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .guide-skip:hover { color: var(--bone); }
 
 /* ---------- share tray ---------- */
-.tray-wrap { position: fixed; inset: 0; z-index: 80; }
-.tray-veil { position: absolute; inset: 0; background: rgba(5, 6, 15, 0.55); backdrop-filter: blur(2px); }
+.tray-dialog {
+  inset: auto 22px 22px auto; margin: 0; padding: 0;
+  border: none; background: transparent; max-width: none; max-height: none;
+}
+.tray-dialog::backdrop { background: rgba(5, 6, 15, 0.55); backdrop-filter: blur(2px); }
 .tray {
-  position: absolute; right: 22px; bottom: 22px;
   width: 300px; padding: 16px;
   border-radius: 18px;
   background: linear-gradient(180deg, #181e40 0%, #10142c 100%);
@@ -333,6 +340,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 }
 .tray-btn:hover { border-color: var(--spectral-dim); color: var(--spectral); }
 .tray-btn:active { transform: scale(0.96); }
+.tray-close { flex: 0 0 auto; width: 34px; font-size: 15px; line-height: 1; }
 .tray-note { font-size: 10.5px; color: var(--bone-dim); margin-top: 10px; line-height: 1.5; }
 
 /* ---------- mobile ---------- */
@@ -350,6 +358,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   .settings-block .setting { margin-top: 0 !important; }
   .rail-hint, .rail .spacer { display: none; }
   .descent { min-height: 0; }
+  .tray-dialog { inset: auto; margin: auto; }
   .foot { padding: 6px 16px 10px; flex-wrap: wrap; }
   .verdict { font-size: 17px; min-width: 0; }
   .foot-hint { display: none; }

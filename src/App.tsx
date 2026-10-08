@@ -79,8 +79,7 @@ export default function App() {
     }
   }, [score, overdose]);
 
-  useEffect(() => { setHum(sound ? score : 0); }, [score, sound]);
-  useEffect(() => { audio.enabled = sound; }, [sound]);
+  useEffect(() => { audio.enabled = sound; setHum(sound ? score : 0); }, [score, sound]);
 
   // ---------- url hash ----------
   useEffect(() => {
@@ -100,12 +99,19 @@ export default function App() {
   // ---------- drag plumbing ----------
   const yToMin = (y: number) => {
     const r = columnRef.current!.getBoundingClientRect();
-    return START + ((y - r.top) / r.height) * (END - START);
+    const p = ((y - r.top) / r.height) * 100;
+    return START + ((p - 2.2) / 95.6) * (END - START);
   };
   const inColumn = (x: number, y: number) => {
     const r = columnRef.current!.getBoundingClientRect();
     return x > r.left && x < r.right && y > r.top && y < r.bottom;
   };
+
+  const finishGuide = () => {
+    setGuideStep(3);
+    setTimeout(() => { setGuideOn(false); localStorage.setItem("nightcap.guide.v2", "done"); }, 2400);
+  };
+  const skipGuide = () => { setGuideOn(false); localStorage.setItem("nightcap.guide.v2", "done"); };
 
   const previewScore = (d: Drag, snap: number | null) => {
     if (snap == null) return score;
@@ -177,13 +183,20 @@ export default function App() {
       const g = ghostState.current;
       if (g.mode === "premonition") g.mode = score >= 5 ? "alive" : "hidden";
     };
+    const cancel = () => {
+      dragRef.current = null;
+      setDrag(null);
+      const g = ghostState.current;
+      if (g.mode === "premonition") g.mode = score >= 5 ? "alive" : "hidden";
+      g.haunt = score;
+    };
     addEventListener("pointermove", move);
     addEventListener("pointerup", up);
-    addEventListener("pointercancel", up);
+    addEventListener("pointercancel", cancel);
     return () => {
       removeEventListener("pointermove", move);
       removeEventListener("pointerup", up);
-      removeEventListener("pointercancel", up);
+      removeEventListener("pointercancel", cancel);
     };
   }, [drag != null]);
 
@@ -197,7 +210,16 @@ export default function App() {
     const up = () => { bedDrag.current.active = false; };
     addEventListener("pointermove", move);
     addEventListener("pointerup", up);
-    return () => { removeEventListener("pointermove", move); removeEventListener("pointerup", up); };
+    addEventListener("pointercancel", up);
+    return () => { removeEventListener("pointermove", move); removeEventListener("pointerup", up); removeEventListener("pointercancel", up); };
+  }, []);
+
+  // keep the ghost informed when the motion preference changes
+  useEffect(() => {
+    const mq = matchMedia("(prefers-reduced-motion: reduce)");
+    const f = () => { ghostState.current.reduceMotion = mq.matches; };
+    mq.addEventListener("change", f);
+    return () => mq.removeEventListener("change", f);
   }, []);
 
   // ghost looks at the cursor
@@ -225,7 +247,7 @@ export default function App() {
     };
     addEventListener("keydown", key);
     return () => removeEventListener("keydown", key);
-  }, [kbCursor != null]);
+  }, [kbCursor]);
 
   const movePlaced = (uid: string, delta: number) => {
     setState((s) => ({
@@ -235,14 +257,21 @@ export default function App() {
   };
   const removePlaced = (uid: string) => setState((s) => ({ ...s, placed: s.placed.filter((p) => p.uid !== uid) }));
 
-  const finishGuide = () => {
-    setGuideStep(3);
-    setTimeout(() => { setGuideOn(false); localStorage.setItem("nightcap.guide.v2", "done"); }, 2400);
-  };
-  const skipGuide = () => { setGuideOn(false); localStorage.setItem("nightcap.guide.v2", "done"); };
-
   const hours: number[] = [];
   for (let m = START; m <= END; m += 60) hours.push(m);
+
+  // lane offsets so drinks at the same time never sit on top of each other
+  const laneOf = useMemo(() => {
+    const last: number[] = [];
+    const map = new Map<string, number>();
+    for (const p of [...placed].sort((a, b) => a.minutes - b.minutes)) {
+      let lane = last.findIndex((t) => Math.abs(p.minutes - t) > 55);
+      if (lane === -1) { lane = Math.min(last.length, 2); if (lane === last.length) last.push(-1e9); }
+      last[lane] = p.minutes;
+      map.set(p.uid, lane);
+    }
+    return map;
+  }, [placed]);
 
   const stars = useMemo(
     () => Array.from({ length: 36 }, (_, i) => ({ x: (i * 37.7 + 13) % 100, y: (i * 23.3 + 7) % 100, o: 0.15 + ((i * 11) % 40) / 100, r: 1 + ((i * 7) % 3) * 0.4 })),
@@ -290,7 +319,7 @@ export default function App() {
                 key={d.id}
                 className="chip"
                 onPointerDown={(e) => { e.preventDefault(); beginDrag({ type: "shelf", drinkId: d.id }, e.clientX, e.clientY); }}
-                onKeyDown={(e) => { if (e.key === "Enter") { setKbCursor({ drinkId: d.id, minutes: Math.max(START, bedtime - 8 * 60) }); e.preventDefault(); } }}
+                onKeyDown={(e) => { if (e.key === "Enter" && !kbCursor) { setKbCursor({ drinkId: d.id, minutes: Math.max(START, bedtime - 8 * 60) }); e.preventDefault(); e.stopPropagation(); } }}
                 aria-label={`${d.name}, ${d.mg} milligrams. Drag onto the day, or press Enter then arrows to place.`}
               >
                 <span>{d.name}<span className="note">{d.note}</span></span>
@@ -386,7 +415,7 @@ export default function App() {
               <div
                 key={p.uid}
                 className={`placed ${p.minutes > bedtime ? "in-night" : ""} ${drag?.type === "move" && drag.uid === p.uid ? "drag-src" : ""}`}
-                style={{ top: `${pct(p.minutes)}%` }}
+                style={{ top: `${pct(p.minutes)}%`, left: `calc(64px + ${(laneOf.get(p.uid) ?? 0) * 104}px)` }}
                 tabIndex={0}
                 role="button"
                 aria-label={`${d.name} at ${fmtTime(p.minutes)}. Arrows move, Delete removes.`}

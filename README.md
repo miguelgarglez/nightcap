@@ -23,11 +23,11 @@ in percent.
 
 - Each drink carries a caffeine dose. At bedtime, every dose is decayed
   with a half-life curve: `mg · 0.5^(hours since sip / half-life)`.
-- Choose your liver: fast (4h), average (5h), or slow (6.5h) half-life.
-- The residual total becomes the haunted score: 0% is a clear night,
-  100% is a poltergeist.
+- Choose your liver: fast (3h), average (5h), or slow (9h) half-life.
+- The residual milligrams become the haunted score, capped at 100:
+  0% is a clear night, 100% is a poltergeist.
 - Drinks dropped *after* bedtime are marked "too late" — they can't haunt
-  tonight (but they still count toward tomorrow's confession).
+  tonight, though they still count toward the overdose verdict.
 - The whole plan lives in the URL hash. Copy the link, share the exact
   haunting — drinks, bedtime, liver and all.
 - Optional sound (off by default): a breath when the ghost condenses,
@@ -38,8 +38,9 @@ in percent.
 The ghost is drawn fresh every frame in a single SVG, driven by a mutable
 state object on `requestAnimationFrame` — no React re-renders, just
 transforms and path math. It watches your cursor for a couple of seconds,
-then politely looks away. It blinks. Over 400mg of total caffeine it
-develops a mouth and an opinion.
+then politely looks away. It blinks. Past 55% haunted it grows a small,
+worried mouth. Past 400mg of total caffeine it starts to jitter and the
+verdict turns medical.
 
 ## Keyboard
 
