@@ -371,41 +371,76 @@ export default function App() {
 
   // trails are drawn in real pixels so they actually reach the ghost.
   // wide screens spread simultaneous drinks across lanes; narrow screens
-  // pack rows against the measured chip bounds, and collapse over-full
-  // days into expandable hour clusters so nothing overlaps or escapes
+  // pack rows against continuously measured chip bounds, and fold
+  // over-full days into expandable time-bucket clusters whose width
+  // grows until every unit fits inside the measured column
   const laneStep = 104;
-  useEffect(() => {
-    const el = columnRef.current?.querySelector<HTMLElement>(".placed .chip");
-    if (el && el.offsetHeight > 0 && el.offsetHeight !== chipH) setChipH(el.offsetHeight);
-  });
+  const chipRO = useRef<ResizeObserver | null>(null);
+  const chipProbe = (el: HTMLElement | null) => {
+    chipRO.current?.disconnect();
+    chipRO.current = null;
+    if (el) {
+      chipRO.current = new ResizeObserver(() => {
+        const h = el.offsetHeight;
+        if (h > 0) setChipH((prev) => (prev === h ? prev : h));
+      });
+      chipRO.current.observe(el);
+    }
+  };
+  useEffect(() => () => chipRO.current?.disconnect(), []);
   const minY = chipH / 2 + 8;
   const maxY = Math.max(minY + chipH, colSize.h - chipH / 2 - 10);
   const rowCap = Math.max(3, Math.floor((maxY - minY) / (chipH + 8)) + 1);
-  const visiblePlaced = useMemo(() => placed.filter((p) => p.minutes >= viewStart), [placed, viewStart]);
-  const crowded = narrow && colSize.h > 0 && visiblePlaced.length > rowCap;
-  const units = useMemo(() => {
-    if (!crowded) return visiblePlaced.map((p) => ({ key: p.uid, minutes: p.minutes, drinks: [p] }));
-    const byHour = new Map<number, typeof visiblePlaced>();
-    for (const p of [...visiblePlaced].sort((a, b) => a.minutes - b.minutes)) {
-      const h = Math.floor(p.minutes / 60) * 60;
-      const arr = byHour.get(h) ?? [];
-      arr.push(p);
-      byHour.set(h, arr);
+  type Unit = { key: string; minutes: number; span: number; drinks: typeof placed };
+  // the same grouping runs on committed drinks and on every candidate:
+  // cluster extraction, destination grouping and threshold crossings
+  // always preview their actual result
+  const buildUnits = (list: typeof placed): Unit[] => {
+    const vis = list.filter((p) => p.minutes >= viewStart);
+    if (!(narrow && colSize.h > 0) || vis.length <= rowCap)
+      return vis.map((p) => ({ key: p.uid, minutes: p.minutes, span: 0, drinks: [p] }));
+    let span = 60;
+    for (;;) {
+      const byB = new Map<number, typeof vis>();
+      for (const p of [...vis].sort((a, b) => a.minutes - b.minutes)) {
+        const h = p.minutes - (p.minutes % span);
+        const arr = byB.get(h) ?? [];
+        arr.push(p);
+        byB.set(h, arr);
+      }
+      const groups: Unit[] = [];
+      for (const [h, drinks] of byB) {
+        if (drinks.length === 1) groups.push({ key: drinks[0].uid, minutes: drinks[0].minutes, span: 0, drinks });
+        else groups.push({ key: `h${h}`, minutes: drinks[0].minutes, span, drinks });
+      }
+      if (groups.length <= rowCap || span > 24 * 60) return groups;
+      span += 60;
     }
-    const out: { key: string; minutes: number; drinks: typeof visiblePlaced }[] = [];
-    for (const [h, drinks] of byHour) {
-      if (drinks.length === 1) out.push({ key: drinks[0].uid, minutes: drinks[0].minutes, drinks });
-      else out.push({ key: `h${h}`, minutes: drinks[0].minutes, drinks });
-    }
-    return out;
-  }, [crowded, visiblePlaced]);
-  const unitOf = new Map<string, { key: string; minutes: number }>();
-  for (const u of units) for (const d of u.drinks) unitOf.set(d.uid, u);
+  };
+  const units = useMemo(
+    () => buildUnits(placed),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [placed, viewStart, narrow, colSize.h, chipH]
+  );
+  // apply the candidate mutation to the drink list first, then run the
+  // same grouping and packing the commit will use
+  const candDrinks = drag?.snap != null
+    ? drag.type === "move"
+      ? placed.map((p) => (p.uid === drag.uid ? { ...p, uid: "__land", minutes: drag.snap! } : p))
+      : [...placed, { uid: "__land", drinkId: (drag as { drinkId?: string }).drinkId ?? "", minutes: drag.snap! }]
+    : null;
+  const liveUnits = useMemo(
+    () => (narrow && candDrinks ? buildUnits(candDrinks) : units),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [narrow, candDrinks, units, viewStart, colSize.h, chipH]
+  );
+  const liveUnitOf = new Map<string, Unit>();
+  for (const u of liveUnits) for (const d of u.drinks) liveUnitOf.set(d.uid, u);
   const packUnits = (list: { key: string; minutes: number }[]) => {
     const sorted = [...list].filter((u) => u.minutes >= viewStart).sort((a, b) => a.minutes - b.minutes);
     const ys = new Map<string, number>();
     const step = sorted.length > 1
-      ? Math.max(Math.min(chipH + 8, (maxY - minY) / (sorted.length - 1)), 20)
+      ? Math.max(Math.min(chipH + 8, (maxY - minY) / (sorted.length - 1)), chipH * 0.5)
       : chipH + 8;
     let prev = -Infinity;
     for (const u of sorted) {
@@ -423,34 +458,24 @@ export default function App() {
     }
     return ys;
   };
-  // one candidate layout drives the landing outline, the preview trail,
-  // the committed position, and the neighbors that would shift
-  const landUnits = drag?.snap != null
-    ? drag.type === "move"
-      ? units.map((u) => u.drinks.length === 1 && u.drinks[0].uid === drag.uid
-          ? { key: "__land", minutes: drag.snap! }
-          : { key: u.key, minutes: u.minutes })
-      : [...units.map((u) => ({ key: u.key, minutes: u.minutes })), { key: "__land", minutes: drag.snap! }]
-    : null;
   const unitY = narrow && colSize.h > 0
-    ? packUnits(landUnits ?? units.map((u) => ({ key: u.key, minutes: u.minutes })))
+    ? packUnits(liveUnits.map((u) => ({ key: u.key, minutes: u.minutes })))
     : null;
-  const landList = drag?.snap != null
-    ? drag.type === "move"
-      ? placed.map((p) => (p.uid === drag.uid ? { uid: "__land", minutes: drag.snap! } : p))
-      : [...placed, { uid: "__land", minutes: drag.snap! }]
-    : null;
-  const candLanes = !narrow && landList ? laneAlloc(landList) : null;
+  const candLanes = !narrow && candDrinks ? laneAlloc(candDrinks) : null;
   const landPreview = drag?.snap != null
     ? narrow
-      ? { y: unitY?.get("__land") ?? minY, lane: 0 }
+      ? { y: unitY?.get(liveUnitOf.get("__land")?.key ?? "__land") ?? minY, lane: 0 }
       : { y: (pct(drag.snap!) / 100) * colSize.h, lane: candLanes?.get("__land") ?? 0 }
     : null;
   const kbRowY = kbCursor && narrow && colSize.h > 0
-    ? packUnits([...units.map((u) => ({ key: u.key, minutes: u.minutes })), { key: "__k", minutes: kbCursor.minutes }]).get("__k")!
+    ? (() => {
+        const u = buildUnits([...placed, { uid: "__k", drinkId: kbCursor.drinkId, minutes: kbCursor.minutes }]);
+        const holder = u.find((x) => x.drinks.some((d) => d.uid === "__k"));
+        return packUnits(u).get(holder?.key ?? "__k") ?? minY;
+      })()
     : kbCursor ? (pct(kbCursor.minutes) / 100) * colSize.h : 0;
   const unitYOf = (p: { uid: string; minutes: number }) => {
-    const u = unitOf.get(p.uid);
+    const u = liveUnitOf.get(p.uid);
     return u ? (unitY?.get(u.key) ?? (pct(u.minutes) / 100) * colSize.h) : (pct(p.minutes) / 100) * colSize.h;
   };
   const laneFor = (uid: string) => candLanes?.get(uid) ?? laneOf.get(uid) ?? 0;
@@ -591,7 +616,7 @@ export default function App() {
                   <stop offset="100%" stopColor="#a9e8dc" stopOpacity="0.1" />
                 </linearGradient>
               </defs>
-              {placed.filter((p) => p.minutes <= bedtime && p.minutes >= viewStart && (unitOf.get(p.uid)?.drinks.length ?? 1) === 1).map((p) => (
+              {placed.filter((p) => p.minutes <= bedtime && p.minutes >= viewStart && (liveUnitOf.get(p.uid)?.drinks.length ?? 1) === 1).map((p) => (
                 <g key={p.uid}>
                   <path
                     d={trailD(unitYOf(p), trailX(laneFor(p.uid)))}
@@ -623,9 +648,9 @@ export default function App() {
             </svg>
           )}
 
-          {units.map((u) => {
+          {liveUnits.map((u, ui) => {
             if (u.drinks.length > 1) {
-              const h = Math.floor(u.minutes / 60) * 60;
+              const h = u.minutes - (u.minutes % u.span);
               return (
                 <div
                   key={u.key}
@@ -639,7 +664,7 @@ export default function App() {
                     if (e.key === "Enter" || e.key === " ") { setOpenCluster(openCluster === h ? null : h); e.preventDefault(); }
                   }}
                 >
-                  <span className="chip">×{u.drinks.length}<span className="mg">{fmtTime(h)}–{fmtTime(h + 59)}</span></span>
+                  <span className="chip" ref={ui === 0 ? chipProbe : undefined}>×{u.drinks.length}<span className="mg">{fmtTime(h)}–{fmtTime(h + u.span - 1)}</span></span>
                   <span className="when">{openCluster === h ? "close" : "open"}</span>
                 </div>
               );
@@ -664,19 +689,19 @@ export default function App() {
                   else if (e.key === "Delete" || e.key === "Backspace") { removePlaced(p.uid); e.preventDefault(); }
                 }}
               >
-                <span className="chip">{d.name}<span className="mg">{d.mg}<span className="unit">mg</span></span></span>
+                <span className="chip" ref={ui === 0 ? chipProbe : undefined}>{d.name}<span className="mg">{d.mg}<span className="unit">mg</span></span></span>
                 <span className="when">{fmtTime(p.minutes)}</span>
               </div>
             );
           })}
 
           {openCluster != null && (() => {
-            const u = units.find((x) => x.key === `h${openCluster}`);
+            const u = liveUnits.find((x) => x.key === `h${openCluster}`);
             if (!u || u.drinks.length < 2) return null;
             const y = Math.min((unitY?.get(u.key) ?? minY) + chipH + 6, Math.max(minY, colSize.h - 196));
             return (
               <div className="clusterbox" style={{ top: `${y}px` }}>
-                <div className="clusterhead">{fmtTime(openCluster)} – {fmtTime(openCluster + 60)} · {u.drinks.length} drinks</div>
+                <div className="clusterhead">{fmtTime(openCluster)} – {fmtTime(openCluster + u.span - 1)} · {u.drinks.length} drinks</div>
                 {u.drinks.map((p) => {
                   const d = DRINKS.find((x) => x.id === p.drinkId)!;
                   return (
