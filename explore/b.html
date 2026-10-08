@@ -1,0 +1,154 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>nightcap — explore B · the descent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./common.css">
+<style>
+  body { display: flex; flex-direction: column; }
+  header { display: flex; justify-content: space-between; align-items: baseline; padding: 18px 28px 12px; }
+  main { flex: 1; display: flex; gap: 22px; padding: 4px 28px 18px; min-height: 0; }
+  #rail { width: 190px; display: flex; flex-direction: column; gap: 14px; }
+  .railLabel { font-family: var(--font-mono); font-size: 9px; letter-spacing: .14em; color: var(--bone-dim); text-transform: uppercase; }
+  #shelf { display: flex; flex-direction: column; gap: 8px; }
+  #shelf .drink { text-align: left; }
+  .spacer { flex: 1; }
+  #descent { flex: 1; position: relative; border-radius: 22px; border: 1px solid #232b52; overflow: hidden;
+    background: linear-gradient(180deg, #1a2147 0%, #141a35 45%, #0a0d1d 78%, #05060f 100%); }
+  .hour { position: absolute; left: 14px; transform: translateY(-50%); }
+  .tickline { position: absolute; left: 52px; right: 0; height: 1px; background: rgba(242,235,220,0.05); }
+  #bedLine { position: absolute; left: 0; right: 0; border-top: 1px dashed rgba(108,92,231,0.6); }
+  #bedLabel { position: absolute; right: 16px; transform: translateY(-130%); font-family: var(--font-mono); font-size: 10px; color: #9a8ff0; letter-spacing: .08em; }
+  #nightZone { position: absolute; left: 0; right: 0; bottom: 0; background: linear-gradient(180deg, rgba(108,92,231,0.10), rgba(5,6,15,0.4)); }
+  .slot { position: absolute; left: 60px; transform: translateY(-50%); }
+  #curve { position: absolute; inset: 0; pointer-events: none; }
+  #ghostSpot { position: absolute; left: 50%; transform: translateX(-50%); width: 190px; height: 230px; }
+  #ground { position: absolute; left: 15%; right: 15%; height: 1px; background: linear-gradient(90deg, transparent, rgba(169,232,220,0.3), transparent); }
+  .star { position: absolute; width: 2px; height: 2px; border-radius: 50%; background: var(--bone); }
+  footer { padding: 0 28px 14px; display: flex; justify-content: space-between; align-items: baseline; }
+  .hint { font-family: var(--font-mono); font-size: 10px; color: var(--bone-dim); letter-spacing: .06em; }
+</style>
+</head>
+<body>
+<header>
+  <div class="wordmark">nightcap</div>
+  <div class="score">tonight: <b id="scoreV">0%</b> haunted</div>
+</header>
+<main>
+  <aside id="rail">
+    <div class="railLabel">the shelf</div>
+    <div id="shelf"></div>
+    <div class="spacer"></div>
+    <div class="railLabel">bedtime · 23:00</div>
+    <div class="railLabel">liver · average</div>
+  </aside>
+  <section id="descent">
+    <div id="nightZone"></div>
+    <div id="stars"></div>
+    <svg id="curve"></svg>
+    <div id="ghostSpot"></div>
+    <div id="ground"></div>
+    <div id="bedLine"><span id="bedLabel">bed · 23:00</span></div>
+  </section>
+</main>
+<footer>
+  <div class="verdict" id="verdict">clear conscience</div>
+  <div class="hint">drag drinks down into the day — explore build</div>
+</footer>
+<script src="./common.js"></script>
+<script>
+const START = 6 * 60, END = 26 * 60, BED = 23 * 60, HL = 5;
+const descent = document.getElementById("descent");
+const curve = document.getElementById("curve");
+const scoreV = document.getElementById("scoreV");
+const verdict = document.getElementById("verdict");
+const ghost = createGhost(document.getElementById("ghostSpot"));
+const shelf = document.getElementById("shelf");
+const placed = [];
+
+const pct = (m) => (m - START) / (END - START);
+for (let m = START; m <= END; m += 60) {
+  const h = document.createElement("span"); h.className = "hour";
+  h.textContent = String(Math.floor(m / 60) % 24).padStart(2, "0") + ":00";
+  h.style.top = pct(m) * 100 + "%"; descent.appendChild(h);
+  const t = document.createElement("i"); t.className = "tickline"; t.style.top = pct(m) * 100 + "%"; descent.appendChild(t);
+}
+document.getElementById("bedLine").style.top = pct(BED) * 100 + "%";
+const nz = document.getElementById("nightZone"); nz.style.top = pct(BED) * 100 + "%";
+const stars = document.getElementById("stars");
+stars.style.cssText = `position:absolute;left:0;right:0;top:${pct(BED) * 100}%;bottom:0`;
+for (let i = 0; i < 30; i++) {
+  const s = document.createElement("i"); s.className = "star";
+  s.style.left = Math.random() * 100 + "%"; s.style.top = Math.random() * 100 + "%";
+  s.style.opacity = 0.15 + Math.random() * 0.4; stars.appendChild(s);
+}
+// ghost waits just below the bed line
+const gs = document.getElementById("ghostSpot");
+gs.style.top = `calc(${pct(BED) * 100}% + 12px)`;
+document.getElementById("ground").style.top = `calc(${pct(BED) * 100}% + 200px)`;
+DRINKS.forEach(d => shelf.appendChild(makeChip(d, (dd, e) => startDrag(dd, e))));
+
+function verdictFor(h) {
+  return h >= 90 ? "poltergeist" : h >= 60 ? "very haunted" : h >= 30 ? "haunted" : h >= 10 ? "lightly haunted" : "clear conscience";
+}
+function update() {
+  const r = residualAt(placed, BED, HL); const h = Math.min(100, Math.round(r));
+  scoreV.textContent = h + "%"; verdict.textContent = verdictFor(h);
+  ghost.setHaunt(h); ghost.setAsleep(h < 5);
+  drawCurve();
+}
+function drawCurve() {
+  const w = descent.clientWidth, ht = descent.clientHeight;
+  curve.setAttribute("viewBox", `0 0 ${w} ${ht}`);
+  let d = "";
+  for (const p of placed) {
+    const y0 = pct(p.minutes) * ht, yBed = pct(BED) * ht;
+    const cx = w * 0.55;
+    d += `<path d="M 60 ${y0} C ${cx} ${y0 + 40}, ${cx} ${yBed - 60}, ${w * 0.5} ${yBed}" fill="none" stroke="${PAL.amber}" stroke-width="1.4" opacity="0.5" stroke-dasharray="3 5"/>`;
+  }
+  curve.innerHTML = d;
+}
+function startDrag(d, e) {
+  const el = document.createElement("div");
+  el.className = "drink"; el.innerHTML = `${d.name}<span class="mg">${d.mg}</span>`;
+  Object.assign(el.style, { position: "fixed", zIndex: 50, pointerEvents: "none", left: e.clientX - 30, top: e.clientY - 14, transform: "rotate(-4deg)" });
+  document.body.appendChild(el);
+  ghost.setPremonition(true);
+  const move = (ev) => {
+    el.style.left = ev.clientX - 30 + "px"; el.style.top = ev.clientY - 14 + "px";
+    ghost.setLook((ev.clientX / innerWidth - .5) * 2, (ev.clientY / innerHeight - .5) * 2);
+    const r = descent.getBoundingClientRect();
+    if (ev.clientX > r.left && ev.clientX < r.right && ev.clientY > r.top && ev.clientY < r.bottom) {
+      const m = START + ((ev.clientY - r.top) / r.height) * (END - START);
+      ghost.setHaunt(Math.min(100, Math.round(residualAt(placed.concat([{ mg: d.mg, minutes: m }]), BED, HL))));
+    }
+  };
+  const up = (ev) => {
+    ghost.setPremonition(false); el.remove();
+    removeEventListener("pointermove", move); removeEventListener("pointerup", up);
+    const r = descent.getBoundingClientRect();
+    if (ev.clientX > r.left && ev.clientX < r.right && ev.clientY > r.top && ev.clientY < r.bottom) {
+      const m = Math.round((START + ((ev.clientY - r.top) / r.height) * (END - START)) / 15) * 15;
+      placed.push({ mg: d.mg, minutes: m });
+      const slot = document.createElement("div"); slot.className = "slot";
+      slot.style.top = pct(m) * 100 + "%";
+      slot.appendChild(makeChip(d, () => {})); descent.appendChild(slot);
+    }
+    update();
+  };
+  addEventListener("pointermove", move); addEventListener("pointerup", up);
+}
+addEventListener("pointermove", e => ghost.setLook((e.clientX / innerWidth - .5) * 2, (e.clientY / innerHeight - .5) * 2));
+addEventListener("resize", drawCurve);
+placed.push({ mg: 95, minutes: 9 * 60 }, { mg: 200, minutes: 15 * 60 });
+for (const p of placed) {
+  const slot = document.createElement("div"); slot.className = "slot";
+  slot.style.top = pct(p.minutes) * 100 + "%";
+  slot.appendChild(makeChip(DRINKS.find(d => d.mg === p.mg), () => {})); descent.appendChild(slot);
+}
+update();
+</script>
+</body>
+</html>

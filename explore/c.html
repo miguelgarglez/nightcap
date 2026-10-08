@@ -1,0 +1,154 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>nightcap — explore C · the séance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./common.css">
+<style>
+  body { display: flex; flex-direction: column; }
+  header { display: flex; justify-content: space-between; align-items: baseline; padding: 18px 28px 12px; }
+  main { flex: 1; display: flex; gap: 26px; padding: 4px 28px 18px; min-height: 0; align-items: stretch; }
+  #dialWrap { flex: 1; display: grid; place-items: center; position: relative; }
+  #dial { position: relative; aspect-ratio: 1; height: min(92%, 640px); }
+  #ring { position: absolute; inset: 0; }
+  #ghostSpot { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -56%); width: 150px; height: 180px; }
+  .hour { position: absolute; left: 50%; top: 50%; }
+  .chipPos { position: absolute; left: 50%; top: 50%; }
+  .chipPos .drink { transform: translate(-50%, -50%); border-color: var(--amber-dim); background: linear-gradient(180deg,#2c2140,#1c1430); white-space: nowrap; }
+  #rail { width: 210px; display: flex; flex-direction: column; gap: 14px; }
+  .railLabel { font-family: var(--font-mono); font-size: 9px; letter-spacing: .14em; color: var(--bone-dim); text-transform: uppercase; }
+  #shelf { display: flex; flex-direction: column; gap: 8px; }
+  #shelf .drink { text-align: left; }
+  .spacer { flex: 1; }
+  footer { padding: 0 28px 14px; display: flex; justify-content: space-between; align-items: baseline; }
+  .hint { font-family: var(--font-mono); font-size: 10px; color: var(--bone-dim); letter-spacing: .06em; }
+</style>
+</head>
+<body>
+<header>
+  <div class="wordmark">nightcap</div>
+  <div class="score">tonight: <b id="scoreV">0%</b> haunted</div>
+</header>
+<main>
+  <section id="dialWrap"><div id="dial">
+    <svg id="ring"></svg>
+    <div id="ghostSpot"></div>
+    <div id="chips"></div>
+  </div></section>
+  <aside id="rail">
+    <div class="railLabel">the shelf</div>
+    <div id="shelf"></div>
+    <div class="spacer"></div>
+    <div class="verdict" id="verdict">clear conscience</div>
+    <div class="railLabel">bedtime · 23:00 · liver · average</div>
+  </aside>
+</main>
+<footer>
+  <div class="hint">drop drinks onto the ring — explore build</div>
+  <div class="hint">the center of the clock is tonight</div>
+</footer>
+<script src="./common.js"></script>
+<script>
+const BED = 23 * 60, HL = 5;
+const dial = document.getElementById("dial");
+const ring = document.getElementById("ring");
+const chipsEl = document.getElementById("chips");
+const ghost = createGhost(document.getElementById("ghostSpot"));
+const shelf = document.getElementById("shelf");
+const placed = [];
+
+const ang = (m) => (m / 1440) * Math.PI * 2 - Math.PI / 2;
+
+function build() {
+  const R = dial.clientWidth / 2;
+  ring.setAttribute("viewBox", `0 0 ${R * 2} ${R * 2}`);
+  let s = `<circle cx="${R}" cy="${R}" r="${R - 4}" fill="#0d1126" stroke="#232b52"/>`;
+  // night wedge 23:00 -> 6:00
+  const a0 = ang(BED), a1 = ang(6 * 60);
+  const x0 = R + Math.cos(a0) * (R - 4), y0 = R + Math.sin(a0) * (R - 4);
+  const x1 = R + Math.cos(a1) * (R - 4), y1 = R + Math.sin(a1) * (R - 4);
+  s += `<path d="M ${R} ${R} L ${x0} ${y0} A ${R - 4} ${R - 4} 0 0 1 ${x1} ${y1} Z" fill="rgba(108,92,231,0.10)"/>`;
+  // ticks + hours
+  for (let h = 0; h < 24; h++) {
+    const a = ang(h * 60), big = h % 6 === 0;
+    const r1 = R - 4, r2 = R - (big ? 18 : 11);
+    s += `<line x1="${R + Math.cos(a) * r1}" y1="${R + Math.sin(a) * r1}" x2="${R + Math.cos(a) * r2}" y2="${R + Math.sin(a) * r2}" stroke="${big ? "#4a5590" : "#2c3560"}" stroke-width="${big ? 1.6 : 1}"/>`;
+    if (big) s += `<text x="${R + Math.cos(a) * (R - 34)}" y="${R + Math.sin(a) * (R - 34) + 4}" fill="#8f887a" font-family="IBM Plex Mono" font-size="11" text-anchor="middle">${String(h).padStart(2, "0")}</text>`;
+  }
+  // bedtime mark
+  s += `<line x1="${R + Math.cos(a0) * (R - 4)}" y1="${R + Math.sin(a0) * (R - 4)}" x2="${R + Math.cos(a0) * (R - 46)}" y2="${R + Math.sin(a0) * (R - 46)}" stroke="#9a8ff0" stroke-width="2" stroke-dasharray="4 3"/>`;
+  // inner disc for the ghost
+  s += `<circle cx="${R}" cy="${R}" r="${R * 0.42}" fill="rgba(169,232,220,0.03)" stroke="rgba(169,232,220,0.12)" stroke-dasharray="2 5"/>`;
+  // decay arcs per placed drink: spiral toward bedtime
+  for (const p of placed) {
+    const a = ang(p.minutes);
+    const rOut = R - 60, rIn = R * 0.44;
+    const steps = 26, pts = [];
+    const frac = Math.min(1, (BED - p.minutes) / (HL * 60 * 3));
+    for (let i = 0; i <= steps * frac; i++) {
+      const t = i / steps;
+      const aa = a + t * (a0 - a) * 0.9;
+      const rr = rOut - t * (rOut - rIn);
+      pts.push(`${R + Math.cos(aa) * rr} ${R + Math.sin(aa) * rr}`);
+    }
+    if (pts.length > 1) s += `<polyline points="${pts.join(" ")}" fill="none" stroke="${PAL.amber}" stroke-width="1.4" opacity="0.55" stroke-dasharray="1 4" stroke-linecap="round"/>`;
+  }
+  ring.innerHTML = s;
+}
+DRINKS.forEach(d => shelf.appendChild(makeChip(d, (dd, e) => startDrag(dd, e))));
+
+function verdictFor(h) {
+  return h >= 90 ? "poltergeist" : h >= 60 ? "very haunted" : h >= 30 ? "haunted" : h >= 10 ? "lightly haunted" : "clear conscience";
+}
+function update() {
+  const r = residualAt(placed, BED, HL); const h = Math.min(100, Math.round(r));
+  document.getElementById("scoreV").textContent = h + "%";
+  document.getElementById("verdict").textContent = verdictFor(h);
+  ghost.setHaunt(h); ghost.setAsleep(h < 5); build();
+}
+function placeChip(d, m) {
+  placed.push({ mg: d.mg, minutes: m });
+  const R = dial.clientWidth / 2, a = ang(m);
+  const el = document.createElement("div"); el.className = "chipPos";
+  el.style.transform = `translate(${Math.cos(a) * (R - 60) - R * 0}px, ${Math.sin(a) * (R - 60)}px)`;
+  el.style.left = R + "px"; el.style.top = R + "px";
+  const c = makeChip(d, () => {}); el.appendChild(c); chipsEl.appendChild(el);
+}
+function startDrag(d, e) {
+  const el = document.createElement("div");
+  el.className = "drink"; el.innerHTML = `${d.name}<span class="mg">${d.mg}</span>`;
+  Object.assign(el.style, { position: "fixed", zIndex: 50, pointerEvents: "none", left: e.clientX - 30, top: e.clientY - 14, transform: "rotate(-4deg)" });
+  document.body.appendChild(el);
+  ghost.setPremonition(true);
+  const toMin = (x, y) => {
+    const r = dial.getBoundingClientRect();
+    const dx = x - (r.left + r.width / 2), dy = y - (r.top + r.height / 2);
+    const dist = Math.hypot(dx, dy);
+    let a = Math.atan2(dy, dx) + Math.PI / 2;
+    if (a < 0) a += Math.PI * 2;
+    return { m: (a / (Math.PI * 2)) * 1440, dist, R: r.width / 2 };
+  };
+  const move = (ev) => {
+    el.style.left = ev.clientX - 30 + "px"; el.style.top = ev.clientY - 14 + "px";
+    ghost.setLook((ev.clientX / innerWidth - .5) * 2, (ev.clientY / innerHeight - .5) * 2);
+    const { m, dist, R } = toMin(ev.clientX, ev.clientY);
+    if (dist < R && dist > R * 0.45) ghost.setHaunt(Math.min(100, Math.round(residualAt(placed.concat([{ mg: d.mg, minutes: m }]), BED, HL))));
+  };
+  const up = (ev) => {
+    ghost.setPremonition(false); el.remove();
+    removeEventListener("pointermove", move); removeEventListener("pointerup", up);
+    const { m, dist, R } = toMin(ev.clientX, ev.clientY);
+    if (dist < R && dist > R * 0.45) placeChip(d, Math.round(m / 15) * 15 % 1440);
+    update();
+  };
+  addEventListener("pointermove", move); addEventListener("pointerup", up);
+}
+addEventListener("pointermove", e => ghost.setLook((e.clientX / innerWidth - .5) * 2, (e.clientY / innerHeight - .5) * 2));
+addEventListener("resize", build);
+placeChip(DRINKS[1], 9 * 60); placeChip(DRINKS[2], 15 * 60);
+update();
+</script>
+</body>
+</html>
