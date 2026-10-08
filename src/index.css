@@ -259,6 +259,25 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   border-style: dashed; border-color: var(--amber-dim);
   background: none; box-shadow: none; color: var(--bone-dim);
 }
+/* a crowded hour folds into one chip that opens into a list */
+.placed.cluster .chip { border-style: dashed; border-color: var(--violet-dim); }
+.placed.cluster .when { color: var(--spectral-dim); }
+.placed.cluster.open .chip { border-color: var(--spectral); }
+.clusterbox {
+  position: absolute; left: 56px; right: 10px; z-index: 14;
+  max-height: 188px; overflow-y: auto;
+  padding: 10px 12px; border-radius: 14px;
+  background: rgba(14, 17, 38, 0.97);
+  border: 1px solid var(--violet-dim);
+  box-shadow: 0 14px 44px rgba(0, 0, 0, 0.55);
+}
+.clusterhead {
+  font-family: var(--font-mono); font-size: 9.5px;
+  letter-spacing: 0.16em; color: var(--bone-dim);
+  margin-bottom: 8px;
+}
+.placed.incluster { position: static; transform: none; margin-bottom: 7px; }
+.placed.incluster:last-child { margin-bottom: 0; }
 .placed.in-night { opacity: 0.42; filter: saturate(0.4); }
 .placed.in-night .when::after { content: " · too late"; color: var(--spectral-dim); }
 .placed:hover .chip { border-color: var(--amber-dim); }

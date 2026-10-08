@@ -64,6 +64,8 @@ export default function App() {
   const bloomedOnce = useRef(false);
   const [bloom, setBloom] = useState(false);
   const [colSize, setColSize] = useState({ w: 0, h: 0 });
+  const [chipH, setChipH] = useState(30);
+  const [openCluster, setOpenCluster] = useState<number | null>(null);
 
   const { placed, bedtime, liver } = state;
   // narrow screens default to noon onward — the hours caffeine is actually poured
@@ -369,54 +371,89 @@ export default function App() {
 
   // trails are drawn in real pixels so they actually reach the ghost.
   // wide screens spread simultaneous drinks across lanes; narrow screens
-  // pack them into rows measured from rendered bounds, so nothing can
-  // overlap and nothing leaves the column
+  // pack rows against the measured chip bounds, and collapse over-full
+  // days into expandable hour clusters so nothing overlaps or escapes
   const laneStep = 104;
-  const rowStep = 38;
-  const packRows = (list: { uid: string; minutes: number }[]) => {
-    const sorted = list.filter((p) => p.minutes >= viewStart).sort((a, b) => a.minutes - b.minutes);
+  useEffect(() => {
+    const el = columnRef.current?.querySelector<HTMLElement>(".placed .chip");
+    if (el && el.offsetHeight > 0 && el.offsetHeight !== chipH) setChipH(el.offsetHeight);
+  });
+  const minY = chipH / 2 + 8;
+  const maxY = Math.max(minY + chipH, colSize.h - chipH / 2 - 10);
+  const rowCap = Math.max(3, Math.floor((maxY - minY) / (chipH + 8)) + 1);
+  const visiblePlaced = useMemo(() => placed.filter((p) => p.minutes >= viewStart), [placed, viewStart]);
+  const crowded = narrow && colSize.h > 0 && visiblePlaced.length > rowCap;
+  const units = useMemo(() => {
+    if (!crowded) return visiblePlaced.map((p) => ({ key: p.uid, minutes: p.minutes, drinks: [p] }));
+    const byHour = new Map<number, typeof visiblePlaced>();
+    for (const p of [...visiblePlaced].sort((a, b) => a.minutes - b.minutes)) {
+      const h = Math.floor(p.minutes / 60) * 60;
+      const arr = byHour.get(h) ?? [];
+      arr.push(p);
+      byHour.set(h, arr);
+    }
+    const out: { key: string; minutes: number; drinks: typeof visiblePlaced }[] = [];
+    for (const [h, drinks] of byHour) {
+      if (drinks.length === 1) out.push({ key: drinks[0].uid, minutes: drinks[0].minutes, drinks });
+      else out.push({ key: `h${h}`, minutes: drinks[0].minutes, drinks });
+    }
+    return out;
+  }, [crowded, visiblePlaced]);
+  const unitOf = new Map<string, { key: string; minutes: number }>();
+  for (const u of units) for (const d of u.drinks) unitOf.set(d.uid, u);
+  const packUnits = (list: { key: string; minutes: number }[]) => {
+    const sorted = [...list].filter((u) => u.minutes >= viewStart).sort((a, b) => a.minutes - b.minutes);
     const ys = new Map<string, number>();
-    // bound by rendered chip edges, not just centers
-    const minY = 24;
-    const maxY = colSize.h - 30;
-    // compress spacing when a day holds more drinks than full rows fit
-    const step = sorted.length > 1 ? Math.max(24, Math.min(rowStep, (maxY - minY) / (sorted.length - 1))) : rowStep;
+    const step = sorted.length > 1
+      ? Math.max(Math.min(chipH + 8, (maxY - minY) / (sorted.length - 1)), 20)
+      : chipH + 8;
     let prev = -Infinity;
-    for (const p of sorted) {
-      const y = Math.max(minY, Math.max((pct(p.minutes) / 100) * colSize.h, prev + step));
-      ys.set(p.uid, y);
+    for (const u of sorted) {
+      const y = Math.max(minY, Math.max((pct(u.minutes) / 100) * colSize.h, prev + step));
+      ys.set(u.key, y);
       prev = y;
     }
     if (sorted.length && prev > maxY) {
       let next = maxY;
       for (let i = sorted.length - 1; i >= 0; i--) {
-        const uid = sorted[i].uid;
-        const y = Math.min(ys.get(uid)!, next);
-        ys.set(uid, y);
+        const y = Math.min(ys.get(sorted[i].key)!, next);
+        ys.set(sorted[i].key, y);
         next = y - step;
       }
     }
     return ys;
   };
-  const rowY = useMemo(
-    () => (narrow && colSize.h > 0 ? packRows(placed) : null),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [narrow, placed, viewStart, colSize.h]
-  );
-  // one candidate layout drives the landing outline, the preview trail
-  // and the committed position, so a drop lands where it promised
-  const landPreview = drag?.snap != null ? (() => {
-    // replace the moved drink in place so preview and commit share the
-    // same candidate ordering; a shelf drop appends, exactly like commit
-    const list = drag.type === "move"
-      ? placed.map((p) => p.uid === drag.uid ? { uid: "__land", minutes: drag.snap! } : p)
-      : [...placed, { uid: "__land", minutes: drag.snap! }];
-    if (narrow && colSize.h > 0) return { y: packRows(list).get("__land")!, lane: 0 };
-    return { y: (pct(drag.snap!) / 100) * colSize.h, lane: laneAlloc(list).get("__land") ?? 0 };
-  })() : null;
+  // one candidate layout drives the landing outline, the preview trail,
+  // the committed position, and the neighbors that would shift
+  const landUnits = drag?.snap != null
+    ? drag.type === "move"
+      ? units.map((u) => u.drinks.length === 1 && u.drinks[0].uid === drag.uid
+          ? { key: "__land", minutes: drag.snap! }
+          : { key: u.key, minutes: u.minutes })
+      : [...units.map((u) => ({ key: u.key, minutes: u.minutes })), { key: "__land", minutes: drag.snap! }]
+    : null;
+  const unitY = narrow && colSize.h > 0
+    ? packUnits(landUnits ?? units.map((u) => ({ key: u.key, minutes: u.minutes })))
+    : null;
+  const landList = drag?.snap != null
+    ? drag.type === "move"
+      ? placed.map((p) => (p.uid === drag.uid ? { uid: "__land", minutes: drag.snap! } : p))
+      : [...placed, { uid: "__land", minutes: drag.snap! }]
+    : null;
+  const candLanes = !narrow && landList ? laneAlloc(landList) : null;
+  const landPreview = drag?.snap != null
+    ? narrow
+      ? { y: unitY?.get("__land") ?? minY, lane: 0 }
+      : { y: (pct(drag.snap!) / 100) * colSize.h, lane: candLanes?.get("__land") ?? 0 }
+    : null;
   const kbRowY = kbCursor && narrow && colSize.h > 0
-    ? packRows([...placed, { uid: "__k", minutes: kbCursor.minutes }]).get("__k")!
+    ? packUnits([...units.map((u) => ({ key: u.key, minutes: u.minutes })), { key: "__k", minutes: kbCursor.minutes }]).get("__k")!
     : kbCursor ? (pct(kbCursor.minutes) / 100) * colSize.h : 0;
+  const unitYOf = (p: { uid: string; minutes: number }) => {
+    const u = unitOf.get(p.uid);
+    return u ? (unitY?.get(u.key) ?? (pct(u.minutes) / 100) * colSize.h) : (pct(p.minutes) / 100) * colSize.h;
+  };
+  const laneFor = (uid: string) => candLanes?.get(uid) ?? laneOf.get(uid) ?? 0;
   const bedY = (bedPct / 100) * colSize.h;
   const trailD = (y: number, x: number) => {
     const tx = colSize.w * 0.5;
@@ -554,10 +591,10 @@ export default function App() {
                   <stop offset="100%" stopColor="#a9e8dc" stopOpacity="0.1" />
                 </linearGradient>
               </defs>
-              {placed.filter((p) => p.minutes <= bedtime && p.minutes >= viewStart).map((p) => (
+              {placed.filter((p) => p.minutes <= bedtime && p.minutes >= viewStart && (unitOf.get(p.uid)?.drinks.length ?? 1) === 1).map((p) => (
                 <g key={p.uid}>
                   <path
-                    d={trailD(rowY?.get(p.uid) ?? (pct(p.minutes) / 100) * colSize.h, trailX(laneOf.get(p.uid) ?? 0))}
+                    d={trailD(unitYOf(p), trailX(laneFor(p.uid)))}
                     fill="none" stroke="url(#trailGrad)" strokeWidth="1.5"
                     strokeDasharray="3 8" strokeLinecap="round" opacity="0.7"
                   />
@@ -586,17 +623,37 @@ export default function App() {
             </svg>
           )}
 
-          {placed.filter((p) => p.minutes >= viewStart).map((p) => {
+          {units.map((u) => {
+            if (u.drinks.length > 1) {
+              const h = Math.floor(u.minutes / 60) * 60;
+              return (
+                <div
+                  key={u.key}
+                  className={`placed cluster ${openCluster === h ? "open" : ""}`}
+                  style={{ top: `${unitY?.get(u.key) ?? (pct(u.minutes) / 100) * colSize.h}px`, left: "64px" }}
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`${u.drinks.length} drinks near ${fmtTime(h)}. Enter to open.`}
+                  onClick={() => setOpenCluster(openCluster === h ? null : h)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") { setOpenCluster(openCluster === h ? null : h); e.preventDefault(); }
+                  }}
+                >
+                  <span className="chip">×{u.drinks.length}<span className="mg">{fmtTime(h)}–{fmtTime(h + 59)}</span></span>
+                  <span className="when">{openCluster === h ? "close" : "open"}</span>
+                </div>
+              );
+            }
+            const p = u.drinks[0];
             const d = DRINKS.find((x) => x.id === p.drinkId)!;
-            const lane = laneOf.get(p.uid) ?? 0;
             return (
               <div
                 key={p.uid}
                 data-uid={p.uid}
                 className={`placed ${p.minutes > bedtime ? "in-night" : ""} ${drag?.type === "move" && drag.uid === p.uid ? "drag-src" : ""}`}
                 style={narrow
-                  ? { top: `${rowY?.get(p.uid) ?? (pct(p.minutes) / 100) * colSize.h}px`, left: "64px" }
-                  : { top: `${pct(p.minutes)}%`, left: `calc(64px + ${lane * laneStep}px)` }}
+                  ? { top: `${unitY?.get(u.key) ?? (pct(u.minutes) / 100) * colSize.h}px`, left: "64px" }
+                  : { top: `${pct(p.minutes)}%`, left: `calc(64px + ${laneFor(p.uid) * laneStep}px)` }}
                 tabIndex={0}
                 role="button"
                 aria-label={`${d.name} at ${fmtTime(p.minutes)}. Arrows move, Delete removes.`}
@@ -612,6 +669,37 @@ export default function App() {
               </div>
             );
           })}
+
+          {openCluster != null && (() => {
+            const u = units.find((x) => x.key === `h${openCluster}`);
+            if (!u || u.drinks.length < 2) return null;
+            const y = Math.min((unitY?.get(u.key) ?? minY) + chipH + 6, Math.max(minY, colSize.h - 196));
+            return (
+              <div className="clusterbox" style={{ top: `${y}px` }}>
+                <div className="clusterhead">{fmtTime(openCluster)} – {fmtTime(openCluster + 60)} · {u.drinks.length} drinks</div>
+                {u.drinks.map((p) => {
+                  const d = DRINKS.find((x) => x.id === p.drinkId)!;
+                  return (
+                    <div
+                      key={p.uid}
+                      data-uid={p.uid}
+                      className={`placed incluster ${p.minutes > bedtime ? "in-night" : ""}`}
+                      tabIndex={0}
+                      role="button"
+                      aria-label={`${d.name} at ${fmtTime(p.minutes)}. Drag to move, Delete removes.`}
+                      onPointerDown={(e) => { e.preventDefault(); beginDrag({ type: "move", uid: p.uid }, e.clientX, e.clientY); }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Delete" || e.key === "Backspace") { removePlaced(p.uid); e.preventDefault(); }
+                      }}
+                    >
+                      <span className="chip">{d.name}<span className="mg">{d.mg}<span className="unit">mg</span></span></span>
+                      <span className="when">{fmtTime(p.minutes)}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
 
           {drag?.snap != null && landPreview && (
             <>
