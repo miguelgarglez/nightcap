@@ -20,9 +20,10 @@ type DragKind = { type: "shelf"; drinkId: string } | { type: "move"; uid: string
 type Drag = DragKind & { x: number; y: number; x0: number; y0: number; snap: number | null; over: boolean };
 type BedDrag = { active: boolean };
 
-const pct = (m: number) => 2.2 + ((m - START) / (END - START)) * 95.6;
 const clampBed = (m: number) => Math.max(MIN_BED, Math.min(MAX_BED, m));
 const snap15 = (m: number) => Math.round(m / 15) * 15;
+// four drinks everyone knows first; the rest live behind "more drinks"
+const COMMON_DRINKS = ["espresso", "brewed", "latte", "matcha"];
 
 export default function App() {
   const [state, setState] = useState(() => {
@@ -54,6 +55,9 @@ export default function App() {
   });
   const dropFx = useRef<{ x: number; y: number; uid: string } | null>(null);
   const [poured, setPoured] = useState<{ uid: string; drinkId: string; minutes: number; name: string } | null>(null);
+  const [showAllDrinks, setShowAllDrinks] = useState(false);
+  const [narrow, setNarrow] = useState(() => matchMedia("(max-width: 760px)").matches);
+  const [wideView, setWideView] = useState(false);
   const pouredTimer = useRef(0);
   const bedDetent = useRef(0);
   const earlierAcc = useRef(0);
@@ -62,6 +66,10 @@ export default function App() {
   const [colSize, setColSize] = useState({ w: 0, h: 0 });
 
   const { placed, bedtime, liver } = state;
+  // narrow screens default to noon onward — the hours caffeine is actually poured
+  const viewStart = narrow && !wideView ? 12 * 60 : START;
+  const pct = (m: number) => Math.max(2.2, Math.min(97.8, 2.2 + ((m - viewStart) / (END - viewStart)) * 95.6));
+  const earlyCount = placed.filter((p) => p.minutes < viewStart).length;
   const score = useMemo(() => hauntedScore(placed, bedtime, liver), [placed, bedtime, liver]);
   const residual = useMemo(() => residualAt(placed, bedtime, HALF_LIVES[liver]), [placed, bedtime, liver]);
   const overdose = totalMg(placed) > OVERDOSE_MG;
@@ -139,7 +147,7 @@ export default function App() {
   const yToMin = (y: number) => {
     const r = columnRef.current!.getBoundingClientRect();
     const p = ((y - r.top) / r.height) * 100;
-    return START + ((p - 2.2) / 95.6) * (END - START);
+    return viewStart + ((p - 2.2) / 95.6) * (END - viewStart);
   };
   const inColumn = (x: number, y: number) => {
     const r = columnRef.current!.getBoundingClientRect();
@@ -272,6 +280,14 @@ export default function App() {
     return () => mq.removeEventListener("change", f);
   }, []);
 
+  // narrow screens start on the hours people actually drink caffeine
+  useEffect(() => {
+    const mq = matchMedia("(max-width: 760px)");
+    const f = () => setNarrow(mq.matches);
+    mq.addEventListener("change", f);
+    return () => mq.removeEventListener("change", f);
+  }, []);
+
   // ghost looks at the cursor
   useEffect(() => {
     const move = (e: PointerEvent) => {
@@ -328,7 +344,7 @@ export default function App() {
   const removePlaced = pourOut;
 
   const hours: number[] = [];
-  for (let m = START; m <= END; m += 60) hours.push(m);
+  for (let m = viewStart; m <= END; m += 60) hours.push(m);
 
   // lane offsets so drinks at the same time never sit on top of each other
   const laneOf = useMemo(() => {
@@ -389,7 +405,7 @@ export default function App() {
         <aside className="rail">
           <div className="rail-label">the shelf · drag onto the day</div>
           <div className="shelf" ref={shelfRef}>
-            {DRINKS.map((d) => (
+            {(showAllDrinks ? DRINKS : DRINKS.filter((d) => COMMON_DRINKS.includes(d.id))).map((d) => (
               <button
                 key={d.id}
                 className="chip"
@@ -401,6 +417,12 @@ export default function App() {
                 <span className="mg">{d.mg}<span className="unit">mg</span></span>
               </button>
             ))}
+            {!showAllDrinks && (
+              <button className="chip more" onClick={() => setShowAllDrinks(true)}>
+                <span>more drinks<span className="note">the deep cuts</span></span>
+                <span className="mg">+{DRINKS.length - COMMON_DRINKS.length}</span>
+              </button>
+            )}
           </div>
           <div className="spacer" />
           <div className="settings-block">
@@ -445,12 +467,23 @@ export default function App() {
             commitKb({ ...kbCursor, minutes: m });
           }}
         >
+          {narrow && (
+            <button className="viewtoggle" onClick={() => setWideView((v) => !v)}>
+              {wideView ? "back to today" : earlyCount > 0 ? `show the morning · ${earlyCount} there` : "show the morning"}
+            </button>
+          )}
           {hours.map((m) => (
             <div key={m} className={`hourrow ${m % 360 === 0 ? "major" : ""}`} style={{ top: `${pct(m)}%` }}>
               <span className="hourlabel">{fmtTime(m)}</span>
               <span className="hourline" />
             </div>
           ))}
+          {([["morning", 9 * 60], ["afternoon", 15 * 60], ["evening", 21 * 60]] as const)
+            .filter(([, m]) => m > viewStart)
+            .map(([label, m]) => (
+              <div key={label} className="daypart" style={{ top: `${pct(m)}%` }}>{label}</div>
+            ))}
+          <div className="daypart" style={{ top: `calc(${bedPct}% + 30px)` }}>night</div>
 
           <div className="nightzone" style={{ top: `${bedPct}%` }}>
             {fireflies.map((s, i) => (
@@ -570,7 +603,10 @@ export default function App() {
           </div>
 
           {placed.length === 0 && !drag && !kbCursor && (
-            <div className="drop-hint" style={{ top: "38%" }}>drop a drink at the time you had it</div>
+            <div className="drop-hint" style={{ top: "38%" }}>
+              drop a drink at the time you had it
+              <span className="sub">see what remains at bedtime</span>
+            </div>
           )}
           {score > 0 && (
             <div className="ghostscore" style={{ top: `${bedPct}%` }}>{score}%</div>

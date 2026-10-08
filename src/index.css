@@ -118,6 +118,11 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .chip .mg { color: var(--amber); font-size: 10px; }
 .chip .mg .unit { font-size: 8px; opacity: 0.75; margin-left: 1px; }
 .chip .note { display: block; font-size: 9.5px; color: #a89f8d; letter-spacing: 0.02em; margin-top: 1px; font-family: var(--font-ui); }
+.chip.more {
+  border-style: dashed; border-color: var(--line); background: none;
+  color: var(--bone-dim); box-shadow: none;
+}
+.chip.more:hover { border-color: var(--spectral-dim); color: var(--spectral); }
 
 /* ---------- moon dial (liver) ---------- */
 .setting { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
@@ -334,12 +339,28 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 /* the empty column keeps a quiet invitation where a drink would land */
 .drop-hint {
   position: absolute; left: 50%; transform: translate(-50%, -50%);
-  padding: 8px 16px; border-radius: 999px;
+  padding: 10px 20px; border-radius: 18px; text-align: center;
   border: 1px dashed rgba(240, 169, 92, 0.55);
   font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.04em;
   color: var(--amber); pointer-events: none; white-space: nowrap;
   background: rgba(20, 16, 32, 0.6);
 }
+.drop-hint .sub { display: block; font-size: 9.5px; color: var(--amber-dim); margin-top: 3px; }
+/* restrained structure for the empty grid */
+.daypart {
+  position: absolute; right: 14px; transform: translateY(-50%);
+  font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.18em;
+  color: rgba(168, 159, 141, 0.5); pointer-events: none;
+}
+/* mobile's compact view toggle */
+.viewtoggle {
+  position: absolute; left: 50%; top: 8px; transform: translateX(-50%);
+  z-index: 8; padding: 6px 14px; border-radius: 999px;
+  font-family: var(--font-mono); font-size: 10.5px; color: var(--bone-dim);
+  background: rgba(16, 20, 44, 0.85); border: 1px solid var(--line);
+  transition: color 140ms, border-color 140ms;
+}
+.viewtoggle:active { color: var(--spectral); border-color: var(--spectral-dim); }
 /* the score sits beside its ghost so the result reads locally */
 .ghostscore {
   position: absolute; left: calc(50% + 116px); transform: translateY(-50%);
@@ -502,7 +523,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   .settings-block .setting { margin-top: 0 !important; width: 100%; }
   /* only the 6-hour labels survive the small column */
   .hourrow:not(.major) .hourlabel { display: none; }
-  .ghostscore { font-size: 11px; left: auto; right: 10px; }
+  .ghostscore { font-size: 11px; left: auto; right: 12px; transform: translateY(10px); }
   .rail-hint, .rail .spacer { display: none; }
   .descent { min-height: 0; }
   .ghostspot { width: min(280px, 46%); }

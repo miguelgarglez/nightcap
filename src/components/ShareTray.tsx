@@ -38,8 +38,8 @@ function drawCard(
   c.fillStyle = mg;
   c.beginPath(); c.arc(W - 170, 150, 80, 0, 7); c.fill();
 
-  // --- the mini timeline, left third ---
-  const col = { x: 120, y: 170, w: 250, h: 990 };
+  // --- the mini timeline: motif, not the card's main reading ---
+  const col = { x: 100, y: 190, w: 200, h: 950 };
   const colG = c.createLinearGradient(0, col.y, 0, col.y + col.h);
   colG.addColorStop(0, "#1c2349"); colG.addColorStop(0.6, "#10142c"); colG.addColorStop(1, "#05060f");
   c.fillStyle = colG;
@@ -134,7 +134,7 @@ function drawCard(
   c.restore();
 
   // --- the right side: the reading ---
-  const RX = 470;
+  const RX = 400;
   c.textAlign = "left";
   c.fillStyle = "#f2ebdc";
   c.font = "italic 400 84px 'Almendra'";
