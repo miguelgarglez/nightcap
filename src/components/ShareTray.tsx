@@ -62,14 +62,16 @@ function drawCard(
     c.beginPath(); c.arc(col.x + 30 + (i * 61) % (col.w - 60), bedY + 40 + (i * 97) % (col.y + col.h - bedY - 80), 2.4, 0, 7); c.fill();
   }
   c.globalAlpha = 1;
-  // hour ticks
-  c.font = "400 17px 'IBM Plex Mono'";
+  // hour ticks every 3h, labels only every 6h
+  c.font = "400 16px 'IBM Plex Mono'";
   for (let m = START; m <= END; m += 180) {
     const y = yFor(m);
-    c.strokeStyle = "rgba(242,235,220,0.07)"; c.lineWidth = 1;
+    c.strokeStyle = "rgba(242,235,220,0.06)"; c.lineWidth = 1;
     c.beginPath(); c.moveTo(col.x + 52, y); c.lineTo(col.x + col.w - 16, y); c.stroke();
-    c.fillStyle = "#8f887a"; c.textAlign = "left";
-    c.fillText(fmtTime(m), col.x + 14, y + 6);
+    if (m % 360 === 0) {
+      c.fillStyle = "#a89f8d"; c.textAlign = "left";
+      c.fillText(fmtTime(m), col.x + 12, y + 5);
+    }
   }
   // drinks
   for (const p of state.placed) {
@@ -151,20 +153,20 @@ function drawCard(
   c.fillStyle = "#f2ebdc";
   c.font = "italic 400 54px 'Almendra'";
   c.fillText(verdict.band, RX, 660);
-  c.fillStyle = "#8f887a";
+  c.fillStyle = "#a89f8d";
   c.font = "italic 400 30px 'Almendra'";
   wrapText(c, verdict.line, RX, 706, W - RX - 80, 40);
 
   // evidence
-  c.font = "400 24px 'IBM Plex Mono'";
-  let ey2 = 830;
-  for (const p of state.placed.slice(0, 7)) {
+  c.font = "400 27px 'IBM Plex Mono'";
+  let ey2 = 840;
+  for (const p of state.placed.slice(0, 6)) {
     const d = DRINKS.find((x) => x.id === p.drinkId)!;
-    c.fillStyle = "#8f887a";
+    c.fillStyle = "#a89f8d";
     c.fillText(fmtTime(p.minutes), RX + 4, ey2);
-    c.fillStyle = p.minutes > state.bedtime ? "#5f5a4d" : "#f0a95c";
-    c.fillText(`${d.name} · ${d.mg}mg`, RX + 130, ey2);
-    ey2 += 42;
+    c.fillStyle = p.minutes > state.bedtime ? "#6b6656" : "#f0a95c";
+    c.fillText(`${d.name} · ${d.mg}mg`, RX + 150, ey2);
+    ey2 += 50;
   }
 
   c.textAlign = "left";

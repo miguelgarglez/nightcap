@@ -186,11 +186,14 @@ export default function App() {
     sfxDrop();
     const g = ghostState.current;
     g.haunt = previewScore(d, d.snap);
-    if (g.haunt >= 5) {
+    if (g.haunt >= 5 && g.mode !== "premonition") {
+      // a preview already owns the ghost; only a cold start re-materializes it
       g.mode = "materialize";
       sfxMaterialize();
       clearTimeout(ghostModeTimer.current);
       ghostModeTimer.current = window.setTimeout(() => { if (g.mode === "materialize") g.mode = "alive"; }, 900);
+    } else if (g.haunt >= 5) {
+      g.mode = "alive";
     }
   };
 
@@ -567,7 +570,10 @@ export default function App() {
           </div>
 
           {placed.length === 0 && !drag && !kbCursor && (
-            <div className="drop-hint" style={{ top: "38%" }}>drop a drink here</div>
+            <div className="drop-hint" style={{ top: "38%" }}>drop a drink at the time you had it</div>
+          )}
+          {score > 0 && (
+            <div className="ghostscore" style={{ top: `${bedPct}%` }}>{score}%</div>
           )}
           {score < 5 && !drag && !kbCursor && (
             <div className="empty-night" style={{ top: `calc(${bedPct}% + 48px)` }}>

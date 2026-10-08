@@ -89,7 +89,7 @@ export function Ghost({ state }: { state: GhostState }) {
       }
       const target =
         s.mode === "hidden" ? 0 :
-        s.mode === "premonition" ? 0.5 :
+        s.mode === "premonition" ? clamp01(0.45 + h * 0.55) :
         s.mode === "dissolve" ? 0 : 1;
       const speed = s.mode === "materialize" ? 0.028 : s.mode === "dissolve" ? 0.05 : 0.1;
       appear = lerp(appear, target, speed);
@@ -99,7 +99,8 @@ export function Ghost({ state }: { state: GhostState }) {
       }
 
       const agitation = s.overdose ? 1.6 : 0.25 + h * 0.75;
-      const breathe = n1(w * 0.55) * (s.idle ? 2 : 3.2) * motion;
+      // breathing lives in the rim and hem; the body stays anchored to the line
+      const breathe = n1(w * 0.55) * (s.idle ? 1 : 1.6) * motion;
       const jitX = (s.overdose ? n1(w * 13) * 2.4 : n1(w * 0.8 + 9) * 1.1) * motion;
       // inhale: a drink landing makes the ghost swell briefly
       s.pulse = Math.max(0, s.pulse - 0.03);

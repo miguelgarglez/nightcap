@@ -45,7 +45,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 }
 .tagline {
   font-family: var(--font-display); font-style: italic;
-  font-size: 14px; color: var(--bone-dim);
+  font-size: 14px; color: #a89f8d;
 }
 .mast-spacer { flex: 1; }
 .scoreblock { text-align: right; line-height: 1.1; }
@@ -117,7 +117,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .chip:active { transform: scale(0.97); cursor: grabbing; }
 .chip .mg { color: var(--amber); font-size: 10px; }
 .chip .mg .unit { font-size: 8px; opacity: 0.75; margin-left: 1px; }
-.chip .note { display: block; font-size: 9px; color: var(--bone-dim); letter-spacing: 0.02em; margin-top: 1px; font-family: var(--font-ui); }
+.chip .note { display: block; font-size: 9.5px; color: #a89f8d; letter-spacing: 0.02em; margin-top: 1px; font-family: var(--font-ui); }
 
 /* ---------- moon dial (liver) ---------- */
 .setting { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
@@ -146,7 +146,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .bedstepper button:hover { color: var(--spectral); border-color: var(--spectral-dim); }
 .bedstepper button:active { transform: scale(0.86); }
 .rail .spacer { flex: 1; }
-.rail-hint { font-size: 11px; color: var(--bone-dim); line-height: 1.5; }
+.rail-hint { font-size: 11px; color: #a89f8d; line-height: 1.5; }
 
 /* ---------- the descent ---------- */
 .descent {
@@ -334,10 +334,18 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 /* the empty column keeps a quiet invitation where a drink would land */
 .drop-hint {
   position: absolute; left: 50%; transform: translate(-50%, -50%);
-  padding: 7px 14px; border-radius: 999px;
-  border: 1px dashed rgba(240, 169, 92, 0.4);
-  font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.05em;
-  color: var(--amber-dim); pointer-events: none; white-space: nowrap;
+  padding: 8px 16px; border-radius: 999px;
+  border: 1px dashed rgba(240, 169, 92, 0.55);
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.04em;
+  color: var(--amber); pointer-events: none; white-space: nowrap;
+  background: rgba(20, 16, 32, 0.6);
+}
+/* the score sits beside its ghost so the result reads locally */
+.ghostscore {
+  position: absolute; left: calc(50% + 116px); transform: translateY(-50%);
+  font-family: var(--font-mono); font-size: 13px; font-weight: 500;
+  color: var(--spectral); pointer-events: none;
+  text-shadow: 0 0 16px rgba(169, 232, 220, 0.5);
 }
 
 /* empty night */
@@ -367,9 +375,9 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   font-size: 20px; color: var(--spectral);
   min-width: 170px;
 }
-.verdict-line { font-size: 12.5px; color: var(--bone-dim); font-style: italic; font-family: var(--font-display); }
+.verdict-line { font-size: 13px; color: #a39a88; font-style: italic; font-family: var(--font-display); }
 .foot .spacer { flex: 1; }
-.foot-hint { font-family: var(--font-mono); font-size: 10px; color: var(--bone-dim); letter-spacing: 0.06em; }
+.foot-hint { font-family: var(--font-mono); font-size: 10px; color: #a39a88; letter-spacing: 0.06em; }
 .guide-on .foot-hint { visibility: hidden; }
 
 /* ---------- guide ---------- */
@@ -471,13 +479,13 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .tray-primary:active { transform: scale(0.95); }
 .tray-primary:disabled { opacity: 0.4; }
 .tray-quiet {
-  font-family: var(--font-mono); font-size: 11px; color: var(--bone-dim);
+  font-family: var(--font-mono); font-size: 11px; color: #a89f8d;
   padding: 8px 2px; letter-spacing: 0.03em;
   border-bottom: 1px solid transparent;
   transition: color 140ms, border-color 140ms;
 }
 .tray-quiet:hover { color: var(--spectral); border-bottom-color: var(--spectral-dim); }
-.tray-note { font-size: 10.5px; color: var(--bone-dim); margin-top: 10px; line-height: 1.5; }
+.tray-note { font-size: 10.5px; color: #a39a88; margin-top: 10px; line-height: 1.5; }
 
 /* ---------- mobile ---------- */
 @media (max-width: 760px) {
@@ -490,8 +498,11 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   .shelf { flex-direction: row; overflow-x: auto; overflow-y: hidden; padding-bottom: 2px; }
   .shelf .chip { flex: 0 0 auto; }
   .shelf .chip .note { display: none; }
-  .settings-block { display: flex; gap: 18px; align-items: center; }
-  .settings-block .setting { margin-top: 0 !important; }
+  .settings-block { flex-direction: column; align-items: stretch; gap: 6px; }
+  .settings-block .setting { margin-top: 0 !important; width: 100%; }
+  /* only the 6-hour labels survive the small column */
+  .hourrow:not(.major) .hourlabel { display: none; }
+  .ghostscore { font-size: 11px; left: auto; right: 10px; }
   .rail-hint, .rail .spacer { display: none; }
   .descent { min-height: 0; }
   .ghostspot { width: min(280px, 46%); }
