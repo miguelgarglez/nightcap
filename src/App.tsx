@@ -727,6 +727,11 @@ export default function App() {
                       >⋮⋮</span>
                       <span className="chip">{d.name}<span className="mg">{d.mg}<span className="unit">mg</span></span></span>
                       <span className="when">{fmtTime(p.minutes)}</span>
+                      <button
+                        className="pour"
+                        aria-label={`pour out ${d.name}`}
+                        onClick={(e) => { e.stopPropagation(); removePlaced(p.uid); }}
+                      >×</button>
                     </div>
                   );
                 })}
