@@ -649,12 +649,15 @@ export default function App() {
           )}
 
           {liveUnits.map((u, ui) => {
+            const holdsLand = u.drinks.some((d) => d.uid === "__land");
+            if (holdsLand && u.drinks.length === 1) return null;
             if (u.drinks.length > 1) {
               const h = u.minutes - (u.minutes % u.span);
               return (
                 <div
                   key={u.key}
-                  className={`placed cluster ${openCluster === h ? "open" : ""}`}
+                  ref={ui === 0 ? chipProbe : undefined}
+                  className={`placed cluster ${openCluster === h ? "open" : ""} ${holdsLand ? "preview" : ""}`}
                   style={{ top: `${unitY?.get(u.key) ?? (pct(u.minutes) / 100) * colSize.h}px`, left: "64px" }}
                   tabIndex={0}
                   role="button"
@@ -664,7 +667,7 @@ export default function App() {
                     if (e.key === "Enter" || e.key === " ") { setOpenCluster(openCluster === h ? null : h); e.preventDefault(); }
                   }}
                 >
-                  <span className="chip" ref={ui === 0 ? chipProbe : undefined}>×{u.drinks.length}<span className="mg">{fmtTime(h)}–{fmtTime(h + u.span - 1)}</span></span>
+                  <span className="chip">×{u.drinks.length}<span className="mg">{fmtTime(h)}–{fmtTime(h + u.span - 1)}</span></span>
                   <span className="when">{openCluster === h ? "close" : "open"}</span>
                 </div>
               );
@@ -675,6 +678,7 @@ export default function App() {
               <div
                 key={p.uid}
                 data-uid={p.uid}
+                ref={ui === 0 ? chipProbe : undefined}
                 className={`placed ${p.minutes > bedtime ? "in-night" : ""} ${drag?.type === "move" && drag.uid === p.uid ? "drag-src" : ""}`}
                 style={narrow
                   ? { top: `${unitY?.get(u.key) ?? (pct(u.minutes) / 100) * colSize.h}px`, left: "64px" }
@@ -689,7 +693,7 @@ export default function App() {
                   else if (e.key === "Delete" || e.key === "Backspace") { removePlaced(p.uid); e.preventDefault(); }
                 }}
               >
-                <span className="chip" ref={ui === 0 ? chipProbe : undefined}>{d.name}<span className="mg">{d.mg}<span className="unit">mg</span></span></span>
+                <span className="chip">{d.name}<span className="mg">{d.mg}<span className="unit">mg</span></span></span>
                 <span className="when">{fmtTime(p.minutes)}</span>
               </div>
             );
@@ -712,11 +716,15 @@ export default function App() {
                       tabIndex={0}
                       role="button"
                       aria-label={`${d.name} at ${fmtTime(p.minutes)}. Drag to move, Delete removes.`}
-                      onPointerDown={(e) => { e.preventDefault(); beginDrag({ type: "move", uid: p.uid }, e.clientX, e.clientY); }}
                       onKeyDown={(e) => {
                         if (e.key === "Delete" || e.key === "Backspace") { removePlaced(p.uid); e.preventDefault(); }
                       }}
                     >
+                      <span
+                        className="grip"
+                        aria-hidden="true"
+                        onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); beginDrag({ type: "move", uid: p.uid }, e.clientX, e.clientY); }}
+                      >⋮⋮</span>
                       <span className="chip">{d.name}<span className="mg">{d.mg}<span className="unit">mg</span></span></span>
                       <span className="when">{fmtTime(p.minutes)}</span>
                     </div>
@@ -730,14 +738,16 @@ export default function App() {
             <>
               <div className="slotline" style={{ top: narrow ? `${landPreview.y}px` : `${pct(drag.snap)}%` }} />
               <div className="slottime drag-time" style={{ top: narrow ? `${landPreview.y}px` : `${pct(drag.snap)}%` }}>{fmtTime(drag.snap)}</div>
-              <div className="placed landing" style={narrow
-                ? { top: `${landPreview.y}px`, left: "64px" }
-                : { top: `${pct(drag.snap)}%`, left: `calc(64px + ${landPreview.lane * laneStep}px)` }}>
-                <span className="chip">
-                  {DRINKS.find((d) => d.id === activeChipDrink)?.name}
-                  <span className="mg">{DRINKS.find((d) => d.id === activeChipDrink)?.mg}<span className="unit">mg</span></span>
-                </span>
-              </div>
+              {(!narrow || (liveUnitOf.get("__land")?.drinks.length ?? 0) === 1) && (
+                <div className="placed landing" style={narrow
+                  ? { top: `${landPreview.y}px`, left: "64px" }
+                  : { top: `${pct(drag.snap)}%`, left: `calc(64px + ${landPreview.lane * laneStep}px)` }}>
+                  <span className="chip">
+                    {DRINKS.find((d) => d.id === activeChipDrink)?.name}
+                    <span className="mg">{DRINKS.find((d) => d.id === activeChipDrink)?.mg}<span className="unit">mg</span></span>
+                  </span>
+                </div>
+              )}
             </>
           )}
           {kbCursor && (

@@ -244,6 +244,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   position: absolute; left: 64px; transform: translateY(-50%);
   display: flex; align-items: center; gap: 7px;
   cursor: grab; touch-action: none; user-select: none;
+  white-space: nowrap;
   transition: top 0.4s var(--ease-spring), left 0.4s var(--ease-spring);
 }
 .placed .chip { padding: 6px 9px; font-size: 10.5px; }
@@ -263,6 +264,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .placed.cluster .chip { border-style: dashed; border-color: var(--violet-dim); }
 .placed.cluster .when { color: var(--spectral-dim); }
 .placed.cluster.open .chip { border-color: var(--spectral); }
+.placed.cluster.preview .chip { border-color: var(--amber); color: var(--bone); }
 .clusterbox {
   position: absolute; left: 56px; right: 10px; z-index: 14;
   max-height: 188px; overflow-y: auto;
@@ -276,8 +278,14 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   letter-spacing: 0.16em; color: var(--bone-dim);
   margin-bottom: 8px;
 }
-.placed.incluster { position: static; transform: none; margin-bottom: 7px; }
+.placed.incluster { position: static; transform: none; margin-bottom: 7px; touch-action: pan-y; cursor: default; }
 .placed.incluster:last-child { margin-bottom: 0; }
+.placed.incluster .grip {
+  touch-action: none; cursor: grab; flex: 0 0 auto;
+  font-size: 9px; letter-spacing: -2px; color: var(--bone-dim);
+  padding: 8px 2px;
+}
+.placed.incluster .grip:active { color: var(--amber); }
 .placed.in-night { opacity: 0.42; filter: saturate(0.4); }
 .placed.in-night .when::after { content: " · too late"; color: var(--spectral-dim); }
 .placed:hover .chip { border-color: var(--amber-dim); }
