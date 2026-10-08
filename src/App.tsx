@@ -725,8 +725,10 @@ export default function App() {
                         aria-hidden="true"
                         onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); beginDrag({ type: "move", uid: p.uid }, e.clientX, e.clientY); }}
                       >⋮⋮</span>
-                      <span className="chip">{d.name}<span className="mg">{d.mg}<span className="unit">mg</span></span></span>
-                      <span className="when">{fmtTime(p.minutes)}</span>
+                      <span className="mid">
+                        <span className="chip">{d.name}<span className="mg">{d.mg}<span className="unit">mg</span></span></span>
+                        <span className="when">{fmtTime(p.minutes)}</span>
+                      </span>
                       <button
                         className="pour"
                         aria-label={`pour out ${d.name}`}

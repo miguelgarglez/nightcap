@@ -266,7 +266,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .placed.cluster.open .chip { border-color: var(--spectral); }
 .placed.cluster.preview .chip { border-color: var(--amber); color: var(--bone); }
 .clusterbox {
-  position: absolute; left: 56px; right: 10px; z-index: 14;
+  position: absolute; left: 8px; right: 8px; z-index: 14;
   max-height: 188px; overflow-y: auto;
   padding: 10px 12px; border-radius: 14px;
   background: rgba(14, 17, 38, 0.97);
@@ -278,21 +278,29 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   letter-spacing: 0.16em; color: var(--bone-dim);
   margin-bottom: 8px;
 }
-.placed.incluster { position: static; transform: none; margin-bottom: 7px; touch-action: pan-y; cursor: default; }
+.placed.incluster {
+  position: static; transform: none; touch-action: pan-y; cursor: default;
+  min-height: 44px; margin-bottom: 10px;
+}
 .placed.incluster:last-child { margin-bottom: 0; }
+.placed.incluster .mid {
+  flex: 1 1 auto; min-width: 0;
+  display: flex; flex-direction: column; gap: 3px; align-items: flex-start;
+}
 .placed.incluster .chip, .placed.incluster .when { touch-action: pan-y; }
+.placed.incluster .chip { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
 .placed.incluster .grip {
-  touch-action: none; cursor: grab; flex: 0 0 auto;
-  width: 44px; height: 44px; margin: -8px 0;
+  touch-action: none; cursor: grab; flex: 0 0 44px;
+  width: 44px; height: 44px;
   display: flex; align-items: center; justify-content: center;
   font-size: 11px; letter-spacing: -3px; color: var(--bone-dim);
 }
 .placed.incluster .grip:active { color: var(--amber); }
 .placed.incluster .pour {
-  touch-action: manipulation; flex: 0 0 auto; margin-left: auto;
-  width: 44px; height: 44px; margin-right: -8px; margin-top: -8px; margin-bottom: -8px;
+  touch-action: manipulation; flex: 0 0 44px;
+  width: 44px; height: 44px;
   background: none; border: none; color: var(--bone-dim);
-  font-family: var(--font-mono); font-size: 14px; cursor: pointer;
+  font-family: var(--font-mono); font-size: 15px; cursor: pointer;
 }
 .placed.incluster .pour:active { color: var(--amber); }
 .placed.in-night { opacity: 0.42; filter: saturate(0.4); }
