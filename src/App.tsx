@@ -367,10 +367,11 @@ export default function App() {
   const activeChipDrink = drag?.type === "shelf" ? drag.drinkId : drag?.type === "move" ? placed.find((p) => p.uid === (drag as { uid: string }).uid)?.drinkId : kbCursor?.drinkId;
 
   // trails are drawn in real pixels so they actually reach the ghost
+  const laneStep = narrow ? 58 : 104;
   const bedY = (bedPct / 100) * colSize.h;
   const trailD = (m: number, lane: number) => {
     const y = (pct(m) / 100) * colSize.h;
-    const x = 64 + lane * 104 + 46;
+    const x = 64 + lane * laneStep + 46;
     const tx = colSize.w * 0.5;
     return `M ${x} ${y} C ${x + (tx - x) * 0.32} ${y + 44}, ${tx - 70} ${bedY - 78}, ${tx} ${bedY - 16}`;
   };
@@ -505,7 +506,7 @@ export default function App() {
                   <stop offset="100%" stopColor="#a9e8dc" stopOpacity="0.1" />
                 </linearGradient>
               </defs>
-              {placed.filter((p) => p.minutes <= bedtime).map((p) => (
+              {placed.filter((p) => p.minutes <= bedtime && p.minutes >= viewStart).map((p) => (
                 <g key={p.uid}>
                   <path
                     d={trailD(p.minutes, laneOf.get(p.uid) ?? 0)}
@@ -537,14 +538,14 @@ export default function App() {
             </svg>
           )}
 
-          {placed.map((p) => {
+          {placed.filter((p) => p.minutes >= viewStart).map((p) => {
             const d = DRINKS.find((x) => x.id === p.drinkId)!;
             return (
               <div
                 key={p.uid}
                 data-uid={p.uid}
                 className={`placed ${p.minutes > bedtime ? "in-night" : ""} ${drag?.type === "move" && drag.uid === p.uid ? "drag-src" : ""}`}
-                style={{ top: `${pct(p.minutes)}%`, left: `calc(64px + ${(laneOf.get(p.uid) ?? 0) * 104}px)` }}
+                style={{ top: `${pct(p.minutes)}%`, left: `calc(64px + ${(laneOf.get(p.uid) ?? 0) * laneStep}px)` }}
                 tabIndex={0}
                 role="button"
                 aria-label={`${d.name} at ${fmtTime(p.minutes)}. Arrows move, Delete removes.`}
@@ -608,8 +609,10 @@ export default function App() {
               <span className="sub">see what remains at bedtime</span>
             </div>
           )}
-          {score > 0 && (
-            <div className="ghostscore" style={{ top: `${bedPct}%` }}>{score}%</div>
+          {(drag?.snap != null ? previewScore(drag, drag.snap) : score) > 0 && (
+            <div className={`ghostscore ${drag?.snap != null ? "preview" : ""}`} style={{ top: `${bedPct}%` }}>
+              {drag?.snap != null ? previewScore(drag, drag.snap) : score}%
+            </div>
           )}
           {score < 5 && !drag && !kbCursor && (
             <div className="empty-night" style={{ top: `calc(${bedPct}% + 48px)` }}>

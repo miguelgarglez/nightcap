@@ -244,6 +244,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   position: absolute; left: 64px; transform: translateY(-50%);
   display: flex; align-items: center; gap: 7px;
   cursor: grab; touch-action: none; user-select: none;
+  transition: top 0.4s var(--ease-spring), left 0.4s var(--ease-spring);
 }
 .placed .chip { padding: 6px 9px; font-size: 10.5px; }
 .placed .chip .mg { color: var(--amber); }
@@ -368,6 +369,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   color: var(--spectral); pointer-events: none;
   text-shadow: 0 0 16px rgba(169, 232, 220, 0.5);
 }
+.ghostscore.preview { color: var(--amber); text-shadow: 0 0 16px rgba(240, 169, 92, 0.45); }
 
 /* empty night */
 .empty-night {
@@ -548,8 +550,8 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 @media (pointer: coarse) {
   .iconbtn { width: 40px; height: 42px; }
   .shelf .chip { padding: 10px 14px; }
-  .moonstop { width: 34px; height: 34px; }
-  .bedstepper button { width: 34px; height: 34px; }
+  .moonstop { width: 44px; height: 44px; }
+  .bedstepper button { width: 44px; height: 44px; }
   .guide-skip { font-size: 11px; padding: 10px 6px; }
 }
 
@@ -571,4 +573,5 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   .tray-dialog.closing .tray { animation-duration: 1ms; }
   .tray-loading { animation: none; }
   * { scroll-behavior: auto !important; }
+  .placed { transition: none; }
 }
