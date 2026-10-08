@@ -70,7 +70,7 @@ No backend, no tracking, no cost. Pure client-side math.
 - `prefers-reduced-motion` calms the ghost's breathing, jitter and trails.
 - The share card is drawn on a `<canvas>` in the product's own palette and
   exported as PNG — no image service involved.
-- Google Fonts: Instrument Serif (voice), Instrument Sans (UI),
+- Google Fonts: Almendra (voice), Instrument Sans (UI),
   IBM Plex Mono (measurements).
 
 ## License

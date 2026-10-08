@@ -8,7 +8,7 @@ const haptic = (p: "nudge" | "success" | "buzz") => haptics.trigger(p);
 import {
   DRINKS, START, END, MIN_BED, MAX_BED, OVERDOSE_MG, HALF_LIVES,
   decodeState, encodeState, fmtTime, hauntedScore, nextUid,
-  totalMg, verdictFor,
+  residualAt, totalMg, verdictFor,
   type PlacedDrink,
 } from "./domain";
 import { Ghost, type GhostState } from "./ghost/Ghost";
@@ -17,7 +17,7 @@ import { Guide } from "./components/Guide";
 import { ShareTray } from "./components/ShareTray";
 
 type DragKind = { type: "shelf"; drinkId: string } | { type: "move"; uid: string };
-type Drag = DragKind & { x: number; y: number; snap: number | null; over: boolean };
+type Drag = DragKind & { x: number; y: number; x0: number; y0: number; snap: number | null; over: boolean };
 type BedDrag = { active: boolean };
 
 const pct = (m: number) => 2.2 + ((m - START) / (END - START)) * 95.6;
@@ -50,10 +50,20 @@ export default function App() {
     haunt: 0, mode: "hidden", lookX: 0, lookY: 0,
     overdose: false, idle: false,
     reduceMotion: matchMedia("(prefers-reduced-motion: reduce)").matches,
+    pulse: 0,
   });
+  const dropFx = useRef<{ x: number; y: number; uid: string } | null>(null);
+  const [poured, setPoured] = useState<{ uid: string; drinkId: string; minutes: number; name: string } | null>(null);
+  const pouredTimer = useRef(0);
+  const bedDetent = useRef(0);
+  const earlierAcc = useRef(0);
+  const bloomedOnce = useRef(false);
+  const [bloom, setBloom] = useState(false);
+  const [colSize, setColSize] = useState({ w: 0, h: 0 });
 
   const { placed, bedtime, liver } = state;
   const score = useMemo(() => hauntedScore(placed, bedtime, liver), [placed, bedtime, liver]);
+  const residual = useMemo(() => residualAt(placed, bedtime, HALF_LIVES[liver]), [placed, bedtime, liver]);
   const overdose = totalMg(placed) > OVERDOSE_MG;
   const verdict = verdictFor(score, overdose);
   const bedPct = pct(bedtime);
@@ -68,6 +78,11 @@ export default function App() {
       if (g.mode === "hidden" || g.mode === "dissolve") {
         g.mode = "materialize";
         sfxMaterialize();
+        if (!bloomedOnce.current) {
+          bloomedOnce.current = true;
+          setBloom(true);
+          setTimeout(() => setBloom(false), 1400);
+        }
         clearTimeout(ghostModeTimer.current);
         ghostModeTimer.current = window.setTimeout(() => { if (g.mode === "materialize") g.mode = "alive"; }, 900);
       } else g.mode = "alive";
@@ -85,6 +100,30 @@ export default function App() {
   useEffect(() => {
     history.replaceState(null, "", encodeState(state));
   }, [state]);
+
+  // measure the column so trails can be drawn in real pixels
+  useEffect(() => {
+    const ro = new ResizeObserver(() => {
+      const r = columnRef.current!.getBoundingClientRect();
+      setColSize({ w: r.width, h: r.height });
+    });
+    ro.observe(columnRef.current!);
+    return () => ro.disconnect();
+  }, []);
+
+  // fly a freshly placed chip in from where the pointer released it
+  useEffect(() => {
+    const fx = dropFx.current;
+    dropFx.current = null;
+    if (!fx) return;
+    const el = columnRef.current?.querySelector<HTMLElement>(`[data-uid="${fx.uid}"]`);
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    el.style.setProperty("--dx", `${fx.x - (r.left + r.width / 2)}px`);
+    el.style.setProperty("--dy", `${fx.y - (r.top + r.height / 2)}px`);
+    el.classList.add("flyin");
+    el.addEventListener("animationend", () => el.classList.remove("flyin"), { once: true });
+  }, [placed]);
 
   // ---------- idle: the ghost dozes ----------
   useEffect(() => {
@@ -123,16 +162,22 @@ export default function App() {
 
   const commit = (d: Drag) => {
     if (d.snap == null) {
-      // released outside the column — a move-drag outside removes the drink
-      if (d.type === "move") {
-        setState((s) => ({ ...s, placed: s.placed.filter((p) => p.uid !== d.uid) }));
+      // a touch tap on a shelf chip: arm the placement cursor instead of a drag
+      if (d.type === "shelf" && Math.hypot(d.x - d.x0, d.y - d.y0) < 10 && matchMedia("(pointer: coarse)").matches) {
+        setKbCursor({ drinkId: d.drinkId, minutes: Math.max(START, bedtime - 8 * 60) });
       }
+      // released outside the column — the drink is poured out, but recoverable
+      if (d.type === "move") pourOut(d.uid);
       return;
     }
+    ghostState.current.pulse = 1;
     if (d.type === "shelf") {
-      setState((s) => ({ ...s, placed: [...s.placed, { uid: nextUid(), drinkId: d.drinkId, minutes: d.snap! }] }));
+      const uid = nextUid();
+      dropFx.current = { x: d.x, y: d.y, uid };
+      setState((s) => ({ ...s, placed: [...s.placed, { uid, drinkId: d.drinkId, minutes: d.snap! }] }));
       if (guideStepRef.current === 1) setGuideStep(2);
     } else {
+      dropFx.current = { x: d.x, y: d.y, uid: d.uid };
       setState((s) => ({ ...s, placed: s.placed.map((p) => (p.uid === d.uid ? { ...p, minutes: d.snap! } : p)) }));
       const before = placed.find((p) => p.uid === d.uid);
       if (guideStepRef.current === 2 && before && before.minutes - d.snap! >= 120) finishGuide();
@@ -150,10 +195,10 @@ export default function App() {
   };
 
   const beginDrag = (kind: DragKind, x: number, y: number) => {
-    const d: Drag = { ...kind, x, y, snap: null, over: false };
+    const d: Drag = { ...kind, x, y, x0: x, y0: y, snap: null, over: false };
     dragRef.current = d;
     setDrag(d);
-    if (guideStep === 0) setGuideStep(1);
+    if (guideStepRef.current === 0) setGuideStep(1);
   };
 
   useEffect(() => {
@@ -205,7 +250,9 @@ export default function App() {
   useEffect(() => {
     const move = (e: PointerEvent) => {
       if (!bedDrag.current.active || !columnRef.current) return;
-      setState((s) => ({ ...s, bedtime: clampBed(Math.round(yToMin(e.clientY) / 30) * 30) }));
+      const m = Math.round(yToMin(e.clientY) / 30) * 30;
+      if (m !== bedDetent.current) { bedDetent.current = m; haptic("nudge"); }
+      setState((s) => ({ ...s, bedtime: clampBed(m) }));
     };
     const up = () => { bedDrag.current.active = false; };
     addEventListener("pointermove", move);
@@ -239,23 +286,43 @@ export default function App() {
     const key = (e: KeyboardEvent) => {
       if (e.key === "ArrowUp") { setKbCursor((c) => c && { ...c, minutes: Math.max(START, c.minutes - 15) }); e.preventDefault(); }
       else if (e.key === "ArrowDown") { setKbCursor((c) => c && { ...c, minutes: Math.min(END, c.minutes + 15) }); e.preventDefault(); }
-      else if (e.key === "Enter") {
-        setState((s) => ({ ...s, placed: [...s.placed, { uid: nextUid(), drinkId: kbCursor.drinkId, minutes: kbCursor.minutes }] }));
-        haptic("nudge"); sfxDrop();
-        setKbCursor(null); e.preventDefault();
-      } else if (e.key === "Escape") { setKbCursor(null); e.preventDefault(); }
+      else if (e.key === "Enter") { commitKb(kbCursor); e.preventDefault(); }
+      else if (e.key === "Escape") { setKbCursor(null); e.preventDefault(); }
     };
     addEventListener("keydown", key);
     return () => removeEventListener("keydown", key);
   }, [kbCursor]);
 
+  const commitKb = (c: { drinkId: string; minutes: number }) => {
+    dropFx.current = null;
+    ghostState.current.pulse = 1;
+    setState((s) => ({ ...s, placed: [...s.placed, { uid: nextUid(), drinkId: c.drinkId, minutes: c.minutes }] }));
+    haptic("nudge"); sfxDrop();
+    if (guideStepRef.current === 1) setGuideStep(2);
+    setKbCursor(null);
+  };
+
   const movePlaced = (uid: string, delta: number) => {
+    if (delta < 0 && guideStepRef.current === 2) {
+      earlierAcc.current -= delta;
+      if (earlierAcc.current >= 120) finishGuide();
+    }
     setState((s) => ({
       ...s,
       placed: s.placed.map((p) => p.uid === uid ? { ...p, minutes: Math.max(START, Math.min(END, p.minutes + delta)) } : p),
     }));
   };
-  const removePlaced = (uid: string) => setState((s) => ({ ...s, placed: s.placed.filter((p) => p.uid !== uid) }));
+  const pourOut = (uid: string) => {
+    const old = placed.find((p) => p.uid === uid);
+    setState((s) => ({ ...s, placed: s.placed.filter((p) => p.uid !== uid) }));
+    if (old) {
+      const name = DRINKS.find((x) => x.id === old.drinkId)?.name ?? "drink";
+      setPoured({ ...old, name });
+      clearTimeout(pouredTimer.current);
+      pouredTimer.current = window.setTimeout(() => setPoured(null), 4200);
+    }
+  };
+  const removePlaced = pourOut;
 
   const hours: number[] = [];
   for (let m = START; m <= END; m += 60) hours.push(m);
@@ -273,22 +340,24 @@ export default function App() {
     return map;
   }, [placed]);
 
-  const stars = useMemo(
-    () => Array.from({ length: 36 }, (_, i) => ({ x: (i * 37.7 + 13) % 100, y: (i * 23.3 + 7) % 100, o: 0.15 + ((i * 11) % 40) / 100, r: 1 + ((i * 7) % 3) * 0.4 })),
+  const fireflies = useMemo(
+    () => Array.from({ length: 14 }, (_, i) => ({ x: (i * 37.7 + 13) % 100, y: (i * 23.3 + 7) % 100, o: 0.3 + ((i * 11) % 40) / 100, d: (i * 1.7) % 9, dur: 6 + (i % 4) * 2.3 })),
     []
   );
 
-  const guideTarget = (): { el: HTMLElement | null; step: number } => {
-    if (guideStep === 0) return { el: shelfRef.current, step: 0 };
-    if (guideStep === 1) return { el: columnRef.current, step: 1 };
-    if (guideStep === 2) return { el: columnRef.current?.querySelector(".placed") ?? columnRef.current, step: 2 };
-    return { el: null, step: 3 };
-  };
-
   const activeChipDrink = drag?.type === "shelf" ? drag.drinkId : drag?.type === "move" ? placed.find((p) => p.uid === (drag as { uid: string }).uid)?.drinkId : kbCursor?.drinkId;
 
+  // trails are drawn in real pixels so they actually reach the ghost
+  const bedY = (bedPct / 100) * colSize.h;
+  const trailD = (m: number, lane: number) => {
+    const y = (pct(m) / 100) * colSize.h;
+    const x = 64 + lane * 104 + 46;
+    const tx = colSize.w * 0.5;
+    return `M ${x} ${y} C ${x + (tx - x) * 0.32} ${y + 44}, ${tx - 70} ${bedY - 78}, ${tx} ${bedY - 16}`;
+  };
+
   return (
-    <div className="app">
+    <div className={`app ${bloom ? "bloom" : ""} ${guideOn ? "guide-on" : ""}`}>
       <header className="masthead">
         <div className="wordmark">nightcap</div>
         <div className="tagline">the caffeine you drank is still awake</div>
@@ -307,6 +376,7 @@ export default function App() {
         <div className="scoreblock">
           <div className="score-num"><NumberFlow value={score} suffix="%" /></div>
           <div className="score-label">haunted tonight</div>
+          {residual >= 1 && <div className="score-mg">≈{Math.round(residual)}mg still circulating</div>}
         </div>
       </header>
 
@@ -323,7 +393,7 @@ export default function App() {
                 aria-label={`${d.name}, ${d.mg} milligrams. Drag onto the day, or press Enter then arrows to place.`}
               >
                 <span>{d.name}<span className="note">{d.note}</span></span>
-                <span className="mg">{d.mg}</span>
+                <span className="mg">{d.mg}<span className="unit">mg</span></span>
               </button>
             ))}
           </div>
@@ -358,7 +428,17 @@ export default function App() {
           </div>
         </aside>
 
-        <section className="descent" ref={columnRef} aria-label="your day. drop drinks on an hour">
+        <section
+          className="descent"
+          ref={columnRef}
+          aria-label="your day. drop drinks on an hour"
+          onPointerUp={(e) => {
+            if (!kbCursor || dragRef.current) return;
+            if ((e.target as HTMLElement).closest(".bedline")) return;
+            const m = Math.max(START, Math.min(END, snap15(yToMin(e.clientY))));
+            commitKb({ ...kbCursor, minutes: m });
+          }}
+        >
           {hours.map((m) => (
             <div key={m} className={`hourrow ${m % 360 === 0 ? "major" : ""}`} style={{ top: `${pct(m)}%` }}>
               <span className="hourlabel">{fmtTime(m)}</span>
@@ -367,53 +447,58 @@ export default function App() {
           ))}
 
           <div className="nightzone" style={{ top: `${bedPct}%` }}>
-            {stars.map((s, i) => (
-              <i key={i} className="star" style={{ left: `${s.x}%`, top: `${s.y}%`, opacity: s.o, width: s.r, height: s.r }} />
+            {fireflies.map((s, i) => (
+              <i key={i} className="firefly" style={{ left: `${s.x}%`, top: `${s.y}%`, opacity: s.o, animationDelay: `${-s.d}s`, animationDuration: `${s.dur}s` }} />
             ))}
+            <div className="fogband f1" />
+            <div className="fogband f2" />
             <div className="moon" style={{ right: "10%", top: "8%" }} />
           </div>
 
           <div className="mist" style={{ top: `${bedPct}%`, opacity: Math.min(1, score / 70) }} />
           <div className="ground" style={{ top: `calc(${bedPct}% + 34px)` }} />
 
-          <svg className="trails" preserveAspectRatio="none" viewBox="0 0 1000 1000">
-            <defs>
-              <linearGradient id="trailGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#f0a95c" stopOpacity="0.85" />
-                <stop offset="100%" stopColor="#a9e8dc" stopOpacity="0.1" />
-              </linearGradient>
-            </defs>
-            {placed.filter((p) => p.minutes <= bedtime).map((p) => (
-              <path
-                key={p.uid}
-                d={`M 64 ${pct(p.minutes) * 10} C 300 ${pct(p.minutes) * 10 + 60}, 420 ${bedPct * 10 - 90}, 500 ${bedPct * 10 - 8}`}
-                fill="none" stroke="url(#trailGrad)" strokeWidth="1.5"
-                strokeDasharray="3 8" strokeLinecap="round" opacity="0.7"
-              />
-            ))}
-            {drag?.snap != null && (
-              <path
-                className="preview"
-                d={`M 64 ${pct(drag.snap) * 10} C 300 ${pct(drag.snap) * 10 + 60}, 420 ${bedPct * 10 - 90}, 500 ${bedPct * 10 - 8}`}
-                fill="none" stroke="#f0a95c" strokeWidth="1.5"
-                strokeDasharray="2 9" strokeLinecap="round" opacity="0.9"
-              />
-            )}
-            {kbCursor && (
-              <path
-                className="preview"
-                d={`M 64 ${pct(kbCursor.minutes) * 10} C 300 ${pct(kbCursor.minutes) * 10 + 60}, 420 ${bedPct * 10 - 90}, 500 ${bedPct * 10 - 8}`}
-                fill="none" stroke="#f0a95c" strokeWidth="1.5"
-                strokeDasharray="2 9" strokeLinecap="round" opacity="0.9"
-              />
-            )}
-          </svg>
+          {colSize.w > 0 && (
+            <svg className="trails" viewBox={`0 0 ${colSize.w} ${colSize.h}`}>
+              <defs>
+                <linearGradient id="trailGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#f0a95c" stopOpacity="0.85" />
+                  <stop offset="100%" stopColor="#a9e8dc" stopOpacity="0.1" />
+                </linearGradient>
+              </defs>
+              {placed.filter((p) => p.minutes <= bedtime).map((p) => (
+                <path
+                  key={p.uid}
+                  d={trailD(p.minutes, laneOf.get(p.uid) ?? 0)}
+                  fill="none" stroke="url(#trailGrad)" strokeWidth="1.5"
+                  strokeDasharray="3 8" strokeLinecap="round" opacity="0.7"
+                />
+              ))}
+              {drag?.snap != null && (
+                <path
+                  className="preview"
+                  d={trailD(drag.snap, 0)}
+                  fill="none" stroke="#f0a95c" strokeWidth="1.5"
+                  strokeDasharray="2 9" strokeLinecap="round" opacity="0.9"
+                />
+              )}
+              {kbCursor && (
+                <path
+                  className="preview"
+                  d={trailD(kbCursor.minutes, 0)}
+                  fill="none" stroke="#f0a95c" strokeWidth="1.5"
+                  strokeDasharray="2 9" strokeLinecap="round" opacity="0.9"
+                />
+              )}
+            </svg>
+          )}
 
           {placed.map((p) => {
             const d = DRINKS.find((x) => x.id === p.drinkId)!;
             return (
               <div
                 key={p.uid}
+                data-uid={p.uid}
                 className={`placed ${p.minutes > bedtime ? "in-night" : ""} ${drag?.type === "move" && drag.uid === p.uid ? "drag-src" : ""}`}
                 style={{ top: `${pct(p.minutes)}%`, left: `calc(64px + ${(laneOf.get(p.uid) ?? 0) * 104}px)` }}
                 tabIndex={0}
@@ -426,7 +511,7 @@ export default function App() {
                   else if (e.key === "Delete" || e.key === "Backspace") { removePlaced(p.uid); e.preventDefault(); }
                 }}
               >
-                <span className="chip">{d.name}<span className="mg">{d.mg}</span></span>
+                <span className="chip">{d.name}<span className="mg">{d.mg}<span className="unit">mg</span></span></span>
                 <span className="when">{fmtTime(p.minutes)}</span>
               </div>
             );
@@ -441,7 +526,7 @@ export default function App() {
           {kbCursor && (
             <>
               <div className="slotline" style={{ top: `${pct(kbCursor.minutes)}%` }} />
-              <div className="slottime" style={{ top: `${pct(kbCursor.minutes)}%` }}>{fmtTime(kbCursor.minutes)} · ↓↑ to move, ⏎ to drop</div>
+              <div className="slottime" style={{ top: `${pct(kbCursor.minutes)}%` }}>{fmtTime(kbCursor.minutes)} · {matchMedia("(pointer: coarse)").matches ? "tap the day to drop" : "↓↑ to move, ⏎ to drop"}</div>
             </>
           )}
 
@@ -460,6 +545,8 @@ export default function App() {
           >
             <span className="bedtag">bed · {fmtTime(bedtime)}</span>
           </div>
+
+          {score < 5 && <div className="dormant" style={{ top: `${bedPct}%` }} />}
 
           <div className="ghostspot" style={{ top: `${bedPct}%` }}>
             <Ghost state={ghostState.current} />
@@ -489,13 +576,21 @@ export default function App() {
         </div>
       )}
 
-      {guideOn && (
-        <Guide
-          step={guideStep}
-          target={guideTarget().el}
-          onSkip={skipGuide}
-        />
+      {poured && (
+        <div className="pourback" role="status">
+          <span>{poured.name} poured out</span>
+          <button
+            onClick={() => {
+              const p = poured;
+              setPoured(null);
+              setState((s) => ({ ...s, placed: [...s.placed, { uid: p.uid, drinkId: p.drinkId, minutes: p.minutes }] }));
+            }}
+          >
+            put it back
+          </button>
+        </div>
       )}
+      {guideOn && <Guide step={guideStep} onSkip={skipGuide} />}
       {trayOpen && <ShareTray state={state} score={score} verdict={verdict} onClose={() => setTrayOpen(false)} />}
     </div>
   );

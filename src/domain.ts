@@ -66,12 +66,12 @@ export function hauntedScore(placed: PlacedDrink[], bedtime: number, liver: Live
 export type Verdict = { band: string; line: string };
 
 export function verdictFor(score: number, overdose: boolean): Verdict {
-  if (overdose) return { band: "beyond haunting", line: "that is not a ghost, that is a medical event. water. now." };
-  if (score >= 90) return { band: "poltergeist", line: "the ghost has rearranged your furniture. you will not sleep." };
+  if (overdose) return { band: "beyond haunting", line: "that stopped being a ghost a while ago. water first, rethink later." };
+  if (score >= 90) return { band: "poltergeist", line: "the furniture has been rearranged. the ceiling will be watched." };
   if (score >= 60) return { band: "very haunted", line: "it is standing over the bed, reading your to-do list." };
   if (score >= 30) return { band: "haunted", line: "it is there. you can feel it watching the ceiling with you." };
   if (score >= 10) return { band: "lightly haunted", line: "a faint presence in the hallway. manageable." };
-  return { band: "clear conscience", line: "nothing is haunting you tonight. sleep well." };
+  return { band: "clear conscience", line: "nothing is haunting you tonight. the night is yours." };
 }
 
 // --- URL hash: #d=espresso@540.coldbrew@900&bed=1380&liver=average ---

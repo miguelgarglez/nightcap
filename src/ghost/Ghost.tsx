@@ -13,6 +13,7 @@ export type GhostState = {
   overdose: boolean;
   idle: boolean; // long inactivity -> it dozes
   reduceMotion: boolean;
+  pulse: number; // set to 1 on a drink landing — the ghost inhales
 };
 
 // layered value noise — cheap, organic
@@ -94,8 +95,13 @@ export function Ghost({ state }: { state: GhostState }) {
       const agitation = s.overdose ? 1.6 : 0.25 + h * 0.75;
       const breathe = n1(w * 0.55) * (s.idle ? 2 : 3.2) * motion;
       const jitX = (s.overdose ? n1(w * 13) * 2.4 : n1(w * 0.8 + 9) * 1.1) * motion;
-      const baseScale = 0.42 + h * 0.78;
-      const scale = baseScale * (s.mode === "premonition" ? 0.96 : 1) * (0.98 + 0.04 * Math.sin(w * 1.1) * motion);
+      // inhale: a drink landing makes the ghost swell briefly
+      s.pulse = Math.max(0, s.pulse - 0.03);
+      const inhale = s.pulse > 0 ? Math.sin(Math.min(1, 1 - s.pulse) * Math.PI) * 0.1 * motion : 0;
+      const baseScale = 0.52 + h * 0.95;
+      const scale = baseScale * (s.mode === "premonition" ? 0.96 : 1) * (1 + inhale) * (0.98 + 0.04 * Math.sin(w * 1.1) * motion);
+      // posture: above 60% it leans over the line and narrows its eyes
+      const loom = Math.max(0, h - 0.6) * 2.5;
 
       // --- geometry: a sheet ghost in a 160x200 box ---
       const W = 62 + h * 10;
@@ -120,7 +126,7 @@ export function Ghost({ state }: { state: GhostState }) {
       body.setAttribute("d", d);
 
       // edge shimmer: same outline, dashed, drifting
-      edgeDash = (edgeDash + 0.35) % 60;
+      edgeDash = (edgeDash + 0.35 * motion) % 60;
       edge.setAttribute("d", d);
       edge.setAttribute("stroke-dasharray", "7 9");
       edge.setAttribute("stroke-dashoffset", String(-edgeDash));
@@ -147,8 +153,8 @@ export function Ghost({ state }: { state: GhostState }) {
       const eyeOpen = s.idle ? 0.1 : 1 - blink * 0.92;
       const ex = 80 + lean * 0.7 + lookX * 5 * motion;
       const ey = 74 + breathe * 0.4 + lookY * 4 * motion;
-      const eyeSep = 21;
-      const eyeRx = 6.4 + h * 1.2, eyeRy = (8.6 + h * 1.6) * eyeOpen;
+      const eyeSep = 21 + loom * 3;
+      const eyeRx = 6.4 + h * 1.2, eyeRy = (8.6 + h * 1.6) * eyeOpen * (1 - loom * 0.22);
       eyeL.setAttribute("cx", String(ex - eyeSep));
       eyeR.setAttribute("cx", String(ex + eyeSep));
       eyeL.setAttribute("cy", String(ey)); eyeR.setAttribute("cy", String(ey));
@@ -163,7 +169,7 @@ export function Ghost({ state }: { state: GhostState }) {
       mouth.setAttribute("rx", "4.2"); mouth.setAttribute("ry", String(6 + h * 3));
       mouth.setAttribute("opacity", mOp.toFixed(3));
 
-      const tx = `translate(${80 + jitX} ${100 + breathe}) scale(${scale}) translate(-80 -100)`;
+      const tx = `translate(${80 + jitX} ${100 + breathe + loom * 9}) rotate(${lean * 0.4 + jitX * 0.3} 80 130) scale(${scale}) translate(-80 -100)`;
       for (const el of [aura, edge, body, eyeL, eyeR, mouth]) {
         el.setAttribute("transform", tx);
       }

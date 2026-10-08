@@ -1,38 +1,40 @@
 import { useEffect, useState } from "react";
 
 const STEPS = [
-  { n: "one", text: "take a drink from the shelf" },
-  { n: "two", text: "drop it on your day" },
-  { n: "three", text: "drag it earlier. watch the ghost thin." },
-  { n: "", text: "that's the whole trick. the rest is yours." },
+  { n: "one", sel: ".shelf", text: "take a drink from the shelf" },
+  { n: "two", sel: ".descent", text: "drop it on your day" },
+  { n: "three", sel: ".placed", text: "drag it earlier. watch the ghost thin." },
+  { n: "", sel: "", text: "that's the whole trick. the rest is yours." },
 ];
 
 export function Guide({
   step,
-  target,
   onSkip,
 }: {
   step: number;
-  target: HTMLElement | null;
   onSkip: () => void;
 }) {
   const [rect, setRect] = useState<DOMRect | null>(null);
+  const s = STEPS[Math.min(step, 3)];
 
+  // the target may not exist yet (the placed drink mounts after the step
+  // advances), so re-query every tick instead of trusting a mount-time ref
   useEffect(() => {
-    if (!target) { setRect(null); return; }
-    const update = () => setRect(target.getBoundingClientRect());
+    const update = () => {
+      const el = s.sel ? document.querySelector(s.sel) : null;
+      setRect(el ? el.getBoundingClientRect() : null);
+    };
     update();
-    const iv = setInterval(update, 200);
+    const iv = setInterval(update, 150);
     addEventListener("resize", update);
     return () => { clearInterval(iv); removeEventListener("resize", update); };
-  }, [target, step]);
+  }, [s.sel]);
 
-  const s = STEPS[Math.min(step, 3)];
   const pad = 10;
   const bubbleStyle: React.CSSProperties = rect
     ? rect.right + 290 < innerWidth
-      ? { left: rect.right + 18, top: Math.max(12, rect.top + rect.height / 2 - 34) }
-      : { left: Math.max(12, rect.left), top: Math.min(innerHeight - 120, rect.bottom + 16) }
+      ? { left: rect.right + 18, top: Math.max(12, rect.top + Math.min(rect.height / 2, 46) - 24) }
+      : { left: Math.max(12, Math.min(rect.left, innerWidth - 300)), top: Math.min(innerHeight - 120, rect.bottom + 16) }
     : { left: "50%", top: "40%", transform: "translate(-50%,-50%)" };
 
   return (
