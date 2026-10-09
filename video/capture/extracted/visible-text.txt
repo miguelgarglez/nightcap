@@ -1,0 +1,59 @@
+[div] nightcap
+[div] the caffeine you drank is still awake
+[div] haunted tonight
+[div] the shelf · drag onto the day
+[span] espresso
+[span] small, dark, consequences
+[span] brewed
+[span] the honest one
+[span] latte
+[span] milk cannot save you
+[span] matcha
+[span] calm, green, persistent
+[span] more drinks
+[span] the deep cuts
+[span] bedtime
+[span] 23:00
+[span] your liver
+[span] average
+[div] half-life
+[div] h · the bed line on the right drags too
+[span] 06:00
+[span] 07:00
+[span] 08:00
+[span] 09:00
+[span] 10:00
+[span] 11:00
+[span] 12:00
+[span] 13:00
+[span] 14:00
+[span] 15:00
+[span] 16:00
+[span] 17:00
+[span] 18:00
+[span] 19:00
+[span] 20:00
+[span] 21:00
+[span] 22:00
+[span] 23:00
+[span] 00:00
+[span] 01:00
+[span] 02:00
+[span] 03:00
+[div] morning
+[div] afternoon
+[div] evening
+[div] night
+[span] bed ·
+[span] 23:00
+[div] drop a drink at the time you had it
+[span] see what remains at bedtime
+[div] nothing is haunting you yet. the drinks are on the shelf.
+[span] clear conscience
+[span] conscience
+[div] nothing is haunting you tonight. the night is yours.
+[span] step
+[span] one
+[span] of three
+[div] take a drink from the shelf
+[button] skip

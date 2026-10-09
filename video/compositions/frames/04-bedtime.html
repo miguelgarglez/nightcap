@@ -1,0 +1,314 @@
+<template>
+  <style>
+    @font-face{
+      font-family: 'Almendra';
+      font-style: italic;
+      font-weight: 400;
+      font-display: swap;
+      src: url("assets/fonts/captured-H4ciBXKAlMnTn0CskxY4-LKYh4y0YzBTFw.woff2") format('woff2');
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+    @font-face{
+      font-family: 'Almendra';
+      font-style: italic;
+      font-weight: 400;
+      font-display: swap;
+      src: url("assets/fonts/captured-H4ciBXKAlMnTn0CskxY4-LyYh4y0YzA.woff2") format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    @font-face{
+      font-family: 'Almendra';
+      font-style: normal;
+      font-weight: 400;
+      font-display: swap;
+      src: url("assets/fonts/captured-H4ckBXKAlMnTn0CskxYzyL6SgK62UzE.woff2") format('woff2');
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+    @font-face{
+      font-family: 'Almendra';
+      font-style: normal;
+      font-weight: 400;
+      font-display: swap;
+      src: url("assets/fonts/captured-H4ckBXKAlMnTn0CskxY9yL6SgK62.woff2") format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    @font-face{
+      font-family: 'Almendra';
+      font-style: normal;
+      font-weight: 700;
+      font-display: swap;
+      src: url("assets/fonts/captured-H4cjBXKAlMnTn0Cskx6G7auxoqOcaThrLtg.woff2") format('woff2');
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+    @font-face{
+      font-family: 'Almendra';
+      font-style: normal;
+      font-weight: 700;
+      font-display: swap;
+      src: url("assets/fonts/captured-H4cjBXKAlMnTn0Cskx6G7au_oqOcaThr.woff2") format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    @font-face{
+      font-family: 'IBM Plex Mono';
+      font-style: normal;
+      font-weight: 400;
+      font-display: swap;
+      src: url("assets/fonts/captured--F63fjptAgt5VM-kVkqdyU8n1iIq131nj-otFQ.woff2") format('woff2');
+      unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+    }
+    @font-face{
+      font-family: 'IBM Plex Mono';
+      font-style: normal;
+      font-weight: 500;
+      font-display: swap;
+      src: url("assets/fonts/captured--F6qfjptAgt5VM-kVkqdyU8n1iIq131nj-otFQ.woff2") format('woff2');
+      unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+    }
+    @font-face{
+      font-family: 'IBM Plex Mono';
+      font-style: normal;
+      font-weight: 500;
+      font-display: swap;
+      src: url("assets/fonts/captured--F6qfjptAgt5VM-kVkqdyU8n3twJwlRFgsAXHNlYzg.woff2") format('woff2');
+      unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+    }
+    @font-face{
+      font-family: 'IBM Plex Mono';
+      font-style: normal;
+      font-weight: 500;
+      font-display: swap;
+      src: url("assets/fonts/captured--F6qfjptAgt5VM-kVkqdyU8n3twJwl9FgsAXHNlYzg.woff2") format('woff2');
+      unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+    }
+    @font-face{
+      font-family: 'IBM Plex Mono';
+      font-style: normal;
+      font-weight: 500;
+      font-display: swap;
+      src: url("assets/fonts/captured--F6qfjptAgt5VM-kVkqdyU8n3twJwl5FgsAXHNlYzg.woff2") format('woff2');
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+    @font-face{
+      font-family: 'IBM Plex Mono';
+      font-style: normal;
+      font-weight: 500;
+      font-display: swap;
+      src: url("assets/fonts/captured--F6qfjptAgt5VM-kVkqdyU8n3twJwlBFgsAXHNk.woff2") format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+
+    #root{
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      container-type: size;
+      font-family: 'Almendra', Georgia, serif;
+    }
+
+    .clip{
+      position: absolute;
+      inset: 0;
+    }
+
+    /* full-bleed ink ground — sits under the hoisted footage */
+    .bed4-ground{
+      background: #0B0E1A;
+    }
+
+    /* preview-only sizing for the in-template video; the assembler hoists it to
+       the host root and lays it out from data-frame-video-* (cover, 1080²). */
+    .bed4-video{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* top legibility scrim over the footage sky (media treatment, not ground) */
+    .bed4-scrim{
+      z-index: 5;
+      background: linear-gradient(180deg,
+        rgba(11,14,26,.72) 0%,
+        rgba(11,14,26,.48) 22%,
+        rgba(11,14,26,0) 45%);
+    }
+
+    /* kicker + rule stub — Scene 1 */
+    .bed4-chrome{ z-index: 10; }
+    .bed4-chrome-rule{
+      position: absolute;
+      left: 60px;
+      top: 52px;
+      width: 36px;
+      height: 2px;
+      background: #F0A95C;
+    }
+    .bed4-kicker{
+      position: absolute;
+      left: 60px;
+      top: 66px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 1.25cqw;
+      font-weight: 500;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: #F0A95C;
+      white-space: nowrap;
+    }
+
+    /* callout — Scene 2, lands as the drag releases */
+    .bed4-callout{ z-index: 10; }
+    .bed4-callout-text{
+      position: absolute;
+      left: 60px;
+      top: 754px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 1.2cqw;
+      font-weight: 500;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: #F2EBDC;
+      white-space: nowrap;
+    }
+    .bed4-callout-leader{
+      position: absolute;
+      left: 60px;
+      top: 798px;
+      width: 246px;
+      height: 1px;
+      background: rgba(242,235,220,.30);
+    }
+    .bed4-callout-tick{
+      position: absolute;
+      left: 308px;
+      top: 784px;
+      width: 2px;
+      height: 30px;
+      background: #F0A95C;
+    }
+
+    /* payoff stamp — Scene 3, verdict word over the payoff sky */
+    .bed4-payoff{ z-index: 20; }
+    .bed4-payoff-rule{
+      position: absolute;
+      left: 522px;
+      top: 172px;
+      width: 36px;
+      height: 2px;
+      background: #F0A95C;
+    }
+    .bed4-payoff-mask{
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 194px;
+      height: 132px;
+      overflow: hidden;
+      text-align: center;
+    }
+    .bed4-payoff-word{
+      display: inline-block;
+      font-family: 'Almendra', Georgia, serif;
+      font-weight: 700;
+      font-size: 9.6cqw;
+      line-height: 1.18;
+      letter-spacing: -.035em;
+      text-transform: lowercase;
+      color: #F0A95C;
+      white-space: nowrap;
+    }
+  </style>
+
+  <div data-hf-id="hf-cl39" id="root" data-composition-id="04-bedtime" data-start="0" data-duration="6" data-width="1080" data-height="1080">
+    <div data-hf-id="hf-rhtx" class="clip bed4-ground" data-start="0" data-duration="6" data-track-index="0"></div>
+
+    <!-- approved frame video hoisted by assemble-index -->
+
+    <div data-hf-id="hf-z147" class="clip bed4-scrim" data-start="0" data-duration="6" data-track-index="5"></div>
+
+    <div data-hf-id="hf-3b1c" class="clip bed4-chrome" data-start="0" data-duration="6" data-track-index="2">
+      <div data-hf-id="hf-ggzx" class="bed4-chrome-rule"></div>
+      <div data-hf-id="hf-c8tw" class="bed4-kicker">HOW IT WORKS · 03</div>
+    </div>
+
+    <div data-hf-id="hf-lcer" class="clip bed4-callout" data-start="0" data-duration="6" data-track-index="3">
+      <div data-hf-id="hf-dzr7" class="bed4-callout-text">THE BED LINE DRAGS TOO</div>
+      <div data-hf-id="hf-hfge" class="bed4-callout-leader"></div>
+      <div data-hf-id="hf-lnbe" class="bed4-callout-tick"></div>
+    </div>
+
+    <div data-hf-id="hf-i1et" class="clip bed4-payoff" data-start="0" data-duration="6" data-track-index="4">
+      <div data-hf-id="hf-2kfc" class="bed4-payoff-rule"></div>
+      <div data-hf-id="hf-pyxu" class="bed4-payoff-mask"><span data-hf-id="hf-1m3f" class="bed4-payoff-word">poltergeist</span></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <script>
+    (function () {
+      // standalone-preview fallback: the assembler hoists this <video> to the host
+      // root and applies data-media-start there; inside the bare template we skip
+      // the dead lead-in ourselves so the drag lands in the Scene windows.
+      var v = document.querySelector(".bed4-video");
+      if (v) {
+        try { v.currentTime = 1.4; } catch (e) {}
+      }
+
+      var tl = gsap.timeline({ paused: true });
+      window.__timelines = window.__timelines || {};
+      window.__timelines["04-bedtime"] = tl;
+
+      // Scene 1 (0–0.8): kicker chrome lands over the establishing footage.
+      tl.fromTo(
+        ".bed4-chrome-rule",
+        { scaleX: 0, transformOrigin: "left center" },
+        { scaleX: 1, duration: 0.4, ease: "power2.out" },
+        0.15
+      );
+      tl.fromTo(
+        ".bed4-kicker",
+        { opacity: 0, y: 10 },
+        { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" },
+        0.28
+      );
+
+      // Scene 2 (0.8–4.4): the footage drags the bed line upward (snap to 22:30
+      // lands ~3.1 with media-start 1.4); the callout lands as it releases.
+      tl.fromTo(
+        ".bed4-callout-text",
+        { opacity: 0, y: 12 },
+        { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" },
+        3.3
+      );
+      tl.fromTo(
+        ".bed4-callout-leader",
+        { scaleX: 0, transformOrigin: "left center" },
+        { scaleX: 1, duration: 0.45, ease: "power2.inOut" },
+        3.45
+      );
+      tl.fromTo(
+        ".bed4-callout-tick",
+        { scaleY: 0, transformOrigin: "center top" },
+        { scaleY: 1, duration: 0.3, ease: "power2.out" },
+        3.72
+      );
+
+      // Scene 3 (4.4–5.5): verdict stamp — rule stub then masked word rise —
+      // as the bed line settles at 22:00 (~4.7) and the ghost holds at 100%.
+      tl.fromTo(
+        ".bed4-payoff-rule",
+        { scaleX: 0, transformOrigin: "center center" },
+        { scaleX: 1, duration: 0.35, ease: "power2.out" },
+        4.5
+      );
+      tl.fromTo(
+        ".bed4-payoff-word",
+        { yPercent: 112 },
+        { yPercent: 0, duration: 0.62, ease: "power4.out" },
+        4.58
+      );
+
+      tl.seek(0);
+    })();
+  </script>
+</template>
