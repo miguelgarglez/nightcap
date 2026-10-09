@@ -8,6 +8,10 @@ Drag your drinks onto the day; meet the ghost still awake at bedtime.
 
 **[nightcap-ashy.vercel.app](https://nightcap-ashy.vercel.app)** — live, free, no account.
 
+[![launch film](docs/launch-poster.png)](docs/launch.mp4)
+
+*[launch film](docs/launch.mp4) — 29 seconds, the whole story.*
+
 ## What it is
 
 nightcap is a small instrument for a question everyone asks too late:

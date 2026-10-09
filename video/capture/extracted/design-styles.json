@@ -1,0 +1,220 @@
+{
+  "typography": [
+    {
+      "role": "label",
+      "fontFamily": "Instrument Sans",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "normal",
+      "letterSpacing": "normal",
+      "color": "#F2EBDC",
+      "sampleText": "the shelf · drag onto the dayespressosmall, dark, consequenc"
+    }
+  ],
+  "spacing": {
+    "observed": [
+      1,
+      6,
+      7,
+      8,
+      10,
+      11,
+      14,
+      16,
+      18,
+      26
+    ],
+    "baseUnit": 8
+  },
+  "radius": [
+    "10px",
+    "13px 13px 4px 4px",
+    "50%"
+  ],
+  "shadows": [
+    {
+      "value": "rgba(0, 0, 0, 0.35) 0px 2px 0px 0px, rgba(242, 235, 220, 0.05) 0px 1px 0px 0px inset",
+      "count": 4
+    },
+    {
+      "value": "rgba(169, 232, 220, 0.45) 0px 0px 12px -2px",
+      "count": 1
+    },
+    {
+      "value": "rgba(240, 220, 160, 0.2) 0px 0px 44px 10px, rgba(120, 105, 70, 0.35) -6px -8px 14px 0px inset",
+      "count": 1
+    },
+    {
+      "value": "rgba(5, 6, 15, 0.55) 0px 0px 0px 4000px, rgba(169, 232, 220, 0.6) 0px 0px 43.8552px 0px",
+      "count": 1
+    }
+  ],
+  "buttons": [
+    {
+      "label": "button",
+      "background": "transparent",
+      "backgroundImage": "radial-gradient(120% 120% at 30% 20%, rgb(26, 34, 70) 0%, rgb(18, 22, 46) 100%)",
+      "backdropFilter": "",
+      "color": "#8F887A",
+      "padding": "1px 6px",
+      "borderRadius": "13px 13px 4px 4px",
+      "border": "1px solid rgb(35, 43, 82)",
+      "boxShadow": "none",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "height": "36px"
+    },
+    {
+      "label": "espressosmall, dark, consequences63mg",
+      "background": "transparent",
+      "backgroundImage": "linear-gradient(rgb(34, 42, 82) 0%, rgb(22, 28, 56) 100%)",
+      "backdropFilter": "",
+      "color": "#F2EBDC",
+      "padding": "8px 11px",
+      "borderRadius": "10px",
+      "border": "1px solid rgb(35, 43, 82)",
+      "boxShadow": "rgba(0, 0, 0, 0.35) 0px 2px 0px 0px, rgba(242, 235, 220, 0.05) 0px 1px 0px 0px inset",
+      "fontSize": "11px",
+      "fontWeight": "400",
+      "height": "44px"
+    },
+    {
+      "label": "more drinksthe deep cuts+7",
+      "background": "transparent",
+      "backgroundImage": "",
+      "backdropFilter": "",
+      "color": "#8F887A",
+      "padding": "8px 11px",
+      "borderRadius": "10px",
+      "border": "1px dashed rgb(35, 43, 82)",
+      "boxShadow": "none",
+      "fontSize": "11px",
+      "fontWeight": "400",
+      "height": "44px"
+    },
+    {
+      "label": "−",
+      "background": "transparent",
+      "backgroundImage": "",
+      "backdropFilter": "",
+      "color": "#8F887A",
+      "padding": "1px 6px",
+      "borderRadius": "50%",
+      "border": "1px solid rgb(35, 43, 82)",
+      "boxShadow": "none",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "height": "28px"
+    },
+    {
+      "label": "button",
+      "background": "transparent",
+      "backgroundImage": "",
+      "backdropFilter": "",
+      "color": "#A9E8DC",
+      "padding": "1px 6px",
+      "borderRadius": "50%",
+      "border": "1px solid rgb(169, 232, 220)",
+      "boxShadow": "rgba(169, 232, 220, 0.45) 0px 0px 12px -2px",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "height": "30px"
+    },
+    {
+      "label": "skip",
+      "background": "transparent",
+      "backgroundImage": "",
+      "backdropFilter": "",
+      "color": "#8F887A",
+      "padding": "8px 4px",
+      "borderRadius": "0px",
+      "border": "0px none rgb(143, 136, 122)",
+      "boxShadow": "none",
+      "fontSize": "10.5px",
+      "fontWeight": "400",
+      "height": "30px"
+    }
+  ],
+  "cards": [],
+  "nav": {
+    "label": "navigation",
+    "background": "transparent",
+    "backgroundImage": "",
+    "backdropFilter": "",
+    "color": "#F2EBDC",
+    "padding": "14px 26px 10px",
+    "borderRadius": "0px",
+    "border": "0px none rgb(242, 235, 220)",
+    "boxShadow": "none",
+    "fontSize": "16px",
+    "fontWeight": "400",
+    "height": "69.4375px"
+  },
+  "chips": [
+    {
+      "label": "the caffeine you drank i",
+      "background": "transparent",
+      "color": "#A89F8D",
+      "padding": "0px",
+      "borderRadius": "0px",
+      "border": "0px none rgb(168, 159, 141)",
+      "boxShadow": "none",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "height": "18px"
+    },
+    {
+      "label": "espressosmall, dark, con",
+      "background": "transparent",
+      "color": "#F2EBDC",
+      "padding": "8px 11px",
+      "borderRadius": "10px",
+      "border": "1px solid rgb(35, 43, 82)",
+      "boxShadow": "rgba(0, 0, 0, 0.35) 0px 2px 0px 0px, rgba(242, 235, 220, 0.05) 0px 1px 0px 0px inset",
+      "fontSize": "11px",
+      "fontWeight": "400",
+      "height": "44px"
+    },
+    {
+      "label": "more drinksthe deep cuts",
+      "background": "transparent",
+      "color": "#8F887A",
+      "padding": "8px 11px",
+      "borderRadius": "10px",
+      "border": "1px dashed rgb(35, 43, 82)",
+      "boxShadow": "none",
+      "fontSize": "11px",
+      "fontWeight": "400",
+      "height": "44px"
+    },
+    {
+      "label": "bed · 23:00",
+      "background": "#171D3D",
+      "color": "#9A8FF0",
+      "padding": "5px 10px 5px 22px",
+      "borderRadius": "9px 9px 0px 0px",
+      "border": "",
+      "boxShadow": "none",
+      "fontSize": "10.5px",
+      "fontWeight": "400",
+      "height": "25px"
+    }
+  ],
+  "statCells": [],
+  "tabs": [],
+  "backgrounds": [
+    {
+      "value": "linear-gradient(rgb(28, 35, 73) 0%, rgb(23, 29, 61) 30%, rgb(16, 20, 44) 62%, rgb(9, 11, 26) 85%, rgb(5, 6, 15) 100%)",
+      "area": 1562306
+    },
+    {
+      "value": "linear-gradient(rgba(108, 92, 231, 0.1) 0%, rgba(30, 26, 70, 0.25) 60%, rgba(9, 8, 26, 0.5) 100%)",
+      "area": 317804
+    },
+    {
+      "value": "radial-gradient(60% 100%, rgba(169, 232, 220, 0.07), rgba(0, 0, 0, 0) 70%)",
+      "area": 229958
+    }
+  ],
+  "glass": []
+}

@@ -1,0 +1,409 @@
+{
+  "summary": {
+    "webAnimations": 19,
+    "cssDeclarations": 33,
+    "scrollTargets": 0,
+    "cdpAnimations": 22,
+    "canvases": 0
+  },
+  "namedAnimations": [
+    "drift",
+    "fogmove",
+    "trailfade",
+    "dormantbreathe",
+    "guidering"
+  ],
+  "scrollTriggeredElements": 0,
+  "representativeAnimations": [
+    {
+      "type": "CSSAnimation",
+      "playState": "running",
+      "animationName": "drift",
+      "targetSelector": "i.firefly",
+      "targetRect": {
+        "x": 463.8846130371094,
+        "y": 829.6193237304688,
+        "width": 3,
+        "height": 3,
+        "top": 829.6193237304688,
+        "right": 466.8846130371094,
+        "bottom": 832.6193237304688,
+        "left": 463.8846130371094
+      },
+      "keyframes": [
+        {
+          "offset": 0,
+          "easing": "ease-in-out",
+          "composite": "auto",
+          "transform": "translate(0px)",
+          "computedOffset": 0
+        },
+        {
+          "offset": 1,
+          "easing": "ease-in-out",
+          "composite": "auto",
+          "transform": "translate(14px, -18px)",
+          "computedOffset": 1
+        }
+      ],
+      "timing": {
+        "duration": 6000,
+        "delay": 0,
+        "iterations": null,
+        "easing": "linear",
+        "direction": "alternate"
+      }
+    },
+    {
+      "type": "CSSAnimation",
+      "playState": "running",
+      "animationName": "drift",
+      "targetSelector": "i.firefly",
+      "targetRect": {
+        "x": 1090.6795654296875,
+        "y": 869.3271484375,
+        "width": 3,
+        "height": 3,
+        "top": 869.3271484375,
+        "right": 1093.6795654296875,
+        "bottom": 872.3271484375,
+        "left": 1090.6795654296875
+      },
+      "keyframes": [
+        {
+          "offset": 0,
+          "easing": "ease-in-out",
+          "composite": "auto",
+          "transform": "translate(0px)",
+          "computedOffset": 0
+        },
+        {
+          "offset": 1,
+          "easing": "ease-in-out",
+          "composite": "auto",
+          "transform": "translate(14px, -18px)",
+          "computedOffset": 1
+        }
+      ],
+      "timing": {
+        "duration": 8300,
+        "delay": -1700,
+        "iterations": null,
+        "easing": "linear",
+        "direction": "alternate"
+      }
+    },
+    {
+      "type": "CSSAnimation",
+      "playState": "running",
+      "animationName": "drift",
+      "targetSelector": "i.firefly",
+      "targetRect": {
+        "x": 1714.78515625,
+        "y": 912.4727172851562,
+        "width": 3,
+        "height": 3,
+        "top": 912.4727172851562,
+        "right": 1717.78515625,
+        "bottom": 915.4727172851562,
+        "left": 1714.78515625
+      },
+      "keyframes": [
+        {
+          "offset": 0,
+          "easing": "ease-in-out",
+          "composite": "auto",
+          "transform": "translate(0px)",
+          "computedOffset": 0
+        },
+        {
+          "offset": 1,
+          "easing": "ease-in-out",
+          "composite": "auto",
+          "transform": "translate(14px, -18px)",
+          "computedOffset": 1
+        }
+      ],
+      "timing": {
+        "duration": 10600,
+        "delay": -3400,
+        "iterations": null,
+        "easing": "linear",
+        "direction": "alternate"
+      }
+    },
+    {
+      "type": "CSSAnimation",
+      "playState": "running",
+      "animationName": "drift",
+      "targetSelector": "i.firefly",
+      "targetRect": {
+        "x": 686.0341796875,
+        "y": 956.7239379882812,
+        "width": 3,
+        "height": 3,
+        "top": 956.7239379882812,
+        "right": 689.0341796875,
+        "bottom": 959.7239379882812,
+        "left": 686.0341796875
+      },
+      "keyframes": [
+        {
+          "offset": 0,
+          "easing": "ease-in-out",
+          "composite": "auto",
+          "transform": "translate(0px)",
+          "computedOffset": 0
+        },
+        {
+          "offset": 1,
+          "easing": "ease-in-out",
+          "composite": "auto",
+          "transform": "translate(14px, -18px)",
+          "computedOffset": 1
+        }
+      ],
+      "timing": {
+        "duration": 12899.999999999998,
+        "delay": -5100,
+        "iterations": null,
+        "easing": "linear",
+        "direction": "alternate"
+      }
+    },
+    {
+      "type": "CSSAnimation",
+      "playState": "running",
+      "animationName": "drift",
+      "targetSelector": "i.firefly",
+      "targetRect": {
+        "x": 1304.0074462890625,
+        "y": 815.3787841796875,
+        "width": 3,
+        "height": 3,
+        "top": 815.3787841796875,
+        "right": 1307.0074462890625,
+        "bottom": 818.3787841796875,
+        "left": 1304.0074462890625
+      },
+      "keyframes": [
+        {
+          "offset": 0,
+          "easing": "ease-in-out",
+          "composite": "auto",
+          "transform": "translate(0px)",
+          "computedOffset": 0
+        },
+        {
+          "offset": 1,
+          "easing": "ease-in-out",
+          "composite": "auto",
+          "transform": "translate(14px, -18px)",
+          "computedOffset": 1
+        }
+      ],
+      "timing": {
+        "duration": 6000,
+        "delay": -6800,
+        "iterations": null,
+        "easing": "linear",
+        "direction": "alternate"
+      }
+    },
+    {
+      "type": "CSSAnimation",
+      "playState": "running",
+      "animationName": "drift",
+      "targetSelector": "i.firefly",
+      "targetRect": {
+        "x": 265.91632080078125,
+        "y": 871.6343994140625,
+        "width": 3,
+        "height": 3,
+        "top": 871.6343994140625,
+        "right": 268.91632080078125,
+        "bottom": 874.6343994140625,
+        "left": 265.91632080078125
+      },
+      "keyframes": [
+        {
+          "offset": 0,
+          "easing": "ease-in-out",
+          "composite": "auto",
+          "transform": "translate(0px)",
+          "computedOffset": 0
+        },
+        {
+          "offset": 1,
+          "easing": "ease-in-out",
+          "composite": "auto",
+          "transform": "translate(14px, -18px)",
+          "computedOffset": 1
+        }
+      ],
+      "timing": {
+        "duration": 8300,
+        "delay": -8500,
+        "iterations": null,
+        "easing": "linear",
+        "direction": "alternate"
+      }
+    },
+    {
+      "type": "CSSAnimation",
+      "playState": "running",
+      "animationName": "drift",
+      "targetSelector": "i.firefly",
+      "targetRect": {
+        "x": 902.4649047851562,
+        "y": 898.8017578125,
+        "width": 3,
+        "height": 3,
+        "top": 898.8017578125,
+        "right": 905.4649047851562,
+        "bottom": 901.8017578125,
+        "left": 902.4649047851562
+      },
+      "keyframes": [
+        {
+          "offset": 0,
+          "easing": "ease-in-out",
+          "composite": "auto",
+          "transform": "translate(0px)",
+          "computedOffset": 0
+        },
+        {
+          "offset": 1,
+          "easing": "ease-in-out",
+          "composite": "auto",
+          "transform": "translate(14px, -18px)",
+          "computedOffset": 1
+        }
+      ],
+      "timing": {
+        "duration": 10600,
+        "delay": -1199.9999999999993,
+        "iterations": null,
+        "easing": "linear",
+        "direction": "alternate"
+      }
+    },
+    {
+      "type": "CSSAnimation",
+      "playState": "running",
+      "animationName": "drift",
+      "targetSelector": "i.firefly",
+      "targetRect": {
+        "x": 1525.1016845703125,
+        "y": 943.8201904296875,
+        "width": 3,
+        "height": 3,
+        "top": 943.8201904296875,
+        "right": 1528.1016845703125,
+        "bottom": 946.8201904296875,
+        "left": 1525.1016845703125
+      },
+      "keyframes": [
+        {
+          "offset": 0,
+          "easing": "ease-in-out",
+          "composite": "auto",
+          "transform": "translate(0px)",
+          "computedOffset": 0
+        },
+        {
+          "offset": 1,
+          "easing": "ease-in-out",
+          "composite": "auto",
+          "transform": "translate(14px, -18px)",
+          "computedOffset": 1
+        }
+      ],
+      "timing": {
+        "duration": 12899.999999999998,
+        "delay": -2900.0000000000005,
+        "iterations": null,
+        "easing": "linear",
+        "direction": "alternate"
+      }
+    },
+    {
+      "type": "CSSAnimation",
+      "playState": "running",
+      "animationName": "drift",
+      "targetSelector": "i.firefly",
+      "targetRect": {
+        "x": 483.5704040527344,
+        "y": 1004.5188598632812,
+        "width": 3,
+        "height": 3,
+        "top": 1004.5188598632812,
+        "right": 486.5704040527344,
+        "bottom": 1007.5188598632812,
+        "left": 483.5704040527344
+      },
+      "keyframes": [
+        {
+          "offset": 0,
+          "easing": "ease-in-out",
+          "composite": "auto",
+          "transform": "translate(0px)",
+          "computedOffset": 0
+        },
+        {
+          "offset": 1,
+          "easing": "ease-in-out",
+          "composite": "auto",
+          "transform": "translate(14px, -18px)",
+          "computedOffset": 1
+        }
+      ],
+      "timing": {
+        "duration": 6000,
+        "delay": -4600,
+        "iterations": null,
+        "easing": "linear",
+        "direction": "alternate"
+      }
+    },
+    {
+      "type": "CSSAnimation",
+      "playState": "running",
+      "animationName": "drift",
+      "targetSelector": "i.firefly",
+      "targetRect": {
+        "x": 1106.0220947265625,
+        "y": 857.4158325195312,
+        "width": 3,
+        "height": 3,
+        "top": 857.4158325195312,
+        "right": 1109.0220947265625,
+        "bottom": 860.4158325195312,
+        "left": 1106.0220947265625
+      },
+      "keyframes": [
+        {
+          "offset": 0,
+          "easing": "ease-in-out",
+          "composite": "auto",
+          "transform": "translate(0px)",
+          "computedOffset": 0
+        },
+        {
+          "offset": 1,
+          "easing": "ease-in-out",
+          "composite": "auto",
+          "transform": "translate(14px, -18px)",
+          "computedOffset": 1
+        }
+      ],
+      "timing": {
+        "duration": 8300,
+        "delay": -6299.999999999999,
+        "iterations": null,
+        "easing": "linear",
+        "direction": "alternate"
+      }
+    }
+  ]
+}

@@ -1,0 +1,282 @@
+<template>
+<style>
+@font-face{
+  font-family: 'Almendra';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("assets/fonts/captured-H4ckBXKAlMnTn0CskxYzyL6SgK62UzE.woff2") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face{
+  font-family: 'Almendra';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("assets/fonts/captured-H4ckBXKAlMnTn0CskxY9yL6SgK62.woff2") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face{
+  font-family: 'Almendra';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("assets/fonts/captured-H4cjBXKAlMnTn0Cskx6G7auxoqOcaThrLtg.woff2") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face{
+  font-family: 'Almendra';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("assets/fonts/captured-H4cjBXKAlMnTn0Cskx6G7au_oqOcaThr.woff2") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face{
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("assets/fonts/captured--F63fjptAgt5VM-kVkqdyU8n1iIq131nj-otFQ.woff2") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face{
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("assets/fonts/captured--F6qfjptAgt5VM-kVkqdyU8n3twJwl1FgsAXHNlYzg.woff2") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face{
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("assets/fonts/captured--F6qfjptAgt5VM-kVkqdyU8n3twJwl9FgsAXHNlYzg.woff2") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01B0, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+@font-face{
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("assets/fonts/captured--F6qfjptAgt5VM-kVkqdyU8n3twJwl5FgsAXHNlYzg.woff2") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face{
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("assets/fonts/captured--F6qfjptAgt5VM-kVkqdyU8n3twJwlBFgsAXHNk.woff2") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face{
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("assets/fonts/captured--F6qfjptAgt5VM-kVkqdyU8n3twJwl1FgsAXHNlYzg.woff2") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face{
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("assets/fonts/captured--F6qfjptAgt5VM-kVkqdyU8n3twJwlRFgsAXHNlYzg.woff2") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face{
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("assets/fonts/captured--F6qfjptAgt5VM-kVkqdyU8n3twJwl9FgsAXHNlYzg.woff2") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01B0, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+@font-face{
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("assets/fonts/captured--F6qfjptAgt5VM-kVkqdyU8n3twJwl5FgsAXHNlYzg.woff2") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face{
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("assets/fonts/captured--F6qfjptAgt5VM-kVkqdyU8n3twJwlBFgsAXHNk.woff2") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+  /* Root: NO container-type / transform / opacity here — the approved hero video is
+     hoisted to the host root as a LATER sibling of this scene and would paint over
+     any descendant stacking context. Keeping the root context-free lets the
+     overlay z-index below beat the hoisted clip (z-index:auto) at host level.
+     Canvas is fixed 1080px, so sizes are authored in px (1cqw = 10.8px). */
+  #root{
+    position: relative;
+    width: 1080px;
+    height: 1080px;
+    overflow: hidden;
+    color: #F2EBDC;
+    -webkit-font-smoothing: antialiased;
+  }
+  .clip{
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  /* ids start with "02-" (digit) — invalid as CSS id selectors and unselectable
+     via querySelector; styles use [id="..."] attribute selectors and JS uses
+     getElementById. The 02-drop- prefix keeps them collision-free. */
+  [id="02-drop-bg"]{
+    background: #0B0E1A;
+  }
+  [id="02-drop-hero"]{
+    display: block;
+    object-fit: cover;
+  }
+  /* --- top-left hairline chrome (Scene 1) --- */
+  [id="02-drop-chrome"]{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1080px;
+    height: 96px;
+    z-index: 2;
+    pointer-events: none;
+  }
+  [id="02-drop-hairline"]{
+    position: absolute;
+    top: 54px;
+    left: 59px;
+    width: 962px;
+    height: 1px;
+    background: #232B52;
+    transform-origin: 0 50%;
+  }
+  [id="02-drop-kicker"]{
+    position: absolute;
+    top: 60px;
+    left: 59px;
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 500;
+    font-size: 15px;
+    line-height: 1;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #F0A95C;
+    white-space: nowrap;
+  }
+  /* --- drop-commit chrome tag (Scene 3) --- */
+  [id="02-drop-tag"]{
+    position: absolute;
+    left: 59px;
+    top: 742px;
+    z-index: 3;
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 500;
+    font-size: 13px;
+    line-height: 1;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #8F887A;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+  /* --- lower-third callout (Scene 2 hold point, holds through Scene 3) --- */
+  [id="02-drop-callout"]{
+    position: absolute;
+    left: 59px;
+    top: 786px;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 18px 24px;
+    background: rgba(11,14,26,0.78);
+    border: 1px solid rgba(35,43,82,0.9);
+    pointer-events: none;
+  }
+  [id="02-drop-stub"]{
+    width: 36px;
+    height: 2px;
+    background: #F0A95C;
+    flex: none;
+    transform-origin: 0 50%;
+  }
+  [id="02-drop-callout-text"]{
+    font-family: "Almendra", serif;
+    font-weight: 700;
+    font-size: 32px;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: #F2EBDC;
+    white-space: nowrap;
+  }
+</style>
+<div data-hf-id="hf-x3wi" id="root" data-composition-id="02-drop" data-width="1080" data-height="1080" data-duration="6">
+  <!-- full-bleed ground on the lowest content track -->
+  <div data-hf-id="hf-ku6q" id="02-drop-bg" class="clip" data-start="0" data-duration="6" data-track-index="0"></div>
+  <!-- hero footage: hoisted to the host root by assemble-index (data-frame-video="approved").
+       data-media-start="5" puts the recorded grab just before t=0, lands the drop
+       commit (clip ~10.15s) at frame ~5.15s — inside Scene 3 — and plays out
+       clip 5.0–11.0s across the 6s window at rate 1. -->
+  <!-- approved frame video hoisted by assemble-index -->
+  <!-- overlays (untimed; driven by the registered timeline) -->
+  <div data-hf-id="hf-oubi" id="02-drop-chrome">
+    <div data-hf-id="hf-pqmq" id="02-drop-hairline"></div>
+    <div data-hf-id="hf-zv8e" id="02-drop-kicker">HOW IT WORKS · 01</div>
+  </div>
+  <div data-hf-id="hf-3kb5" id="02-drop-tag"><span data-hf-id="hf-qnhg" style="color:#F0A95C">espresso · 63mg</span> / placed 19:45</div>
+  <div data-hf-id="hf-rf0s" id="02-drop-callout">
+    <div data-hf-id="hf-m1ec" id="02-drop-stub"></div>
+    <div data-hf-id="hf-bo2y" id="02-drop-callout-text">drop a drink at the time you had it</div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js" integrity="sha384-sG0Hv1tP1lZCk9KQmrIbY/XNwi+OY84GQqhMscbnsoBFqAz8KNCil1kvfL3Hbbk2" crossorigin="anonymous"></script>
+<script>
+  window.__timelines = window.__timelines || {};
+  var tl = gsap.timeline({ paused: true });
+  window.__timelines["02-drop"] = tl;
+
+  var el = function (id) { return document.getElementById(id); };
+
+  /* Scene 1 (0.0–1.2s): hairline chrome draws in, kicker fades in over the footage */
+  tl.fromTo(el("02-drop-hairline"),
+    { scaleX: 0 },
+    { scaleX: 1, duration: 0.55, ease: "power3.out" },
+    0.10);
+  tl.fromTo(el("02-drop-kicker"),
+    { autoAlpha: 0, y: 10 },
+    { autoAlpha: 1, y: 0, duration: 0.62, ease: "power3.out" },
+    0.24);
+
+  /* Scene 2 (1.2–4.6s): the recorded drag plays out — chip crosses the timeline,
+     amber trail feeds the ghost. Callout lands at the hold point (chip hovering
+     over 19:45 in the footage, frame ~4.4–5.1). */
+  tl.fromTo(el("02-drop-callout"),
+    { autoAlpha: 0, y: 22 },
+    { autoAlpha: 1, y: 0, duration: 0.62, ease: "power3.out" },
+    3.85);
+  tl.fromTo(el("02-drop-stub"),
+    { scaleX: 0 },
+    { scaleX: 1, duration: 0.34, ease: "power3.out" },
+    4.05);
+
+  /* Scene 3 (4.6–6.0s): drop commits ~5.15s (chip placed, score 40%) — the chrome
+     tag stamps the placed value, callout holds, footage settles. */
+  tl.fromTo(el("02-drop-tag"),
+    { autoAlpha: 0, y: 8 },
+    { autoAlpha: 1, y: 0, duration: 0.5, ease: "power3.out" },
+    5.12);
+
+  /* hold the landed state to the frame end — no exit (root transition owns it) */
+  tl.set(el("root"), {}, 6);
+</script>
+</template>

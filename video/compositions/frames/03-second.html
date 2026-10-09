@@ -1,0 +1,275 @@
+<template>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <style>
+    @font-face {
+      font-family: "Almendra";
+      font-style: normal;
+      font-weight: 700;
+      font-display: swap;
+      src: url("assets/fonts/captured-H4cjBXKAlMnTn0Cskx6G7auxoqOcaThrLtg.woff2") format("woff2");
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+    @font-face {
+      font-family: "Almendra";
+      font-style: normal;
+      font-weight: 700;
+      font-display: swap;
+      src: url("assets/fonts/captured-H4cjBXKAlMnTn0Cskx6G7au_oqOcaThr.woff2") format("woff2");
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    @font-face {
+      font-family: "IBM Plex Mono";
+      font-style: normal;
+      font-weight: 500;
+      font-display: swap;
+      src: url("assets/fonts/captured--F6qfjptAgt5VM-kVkqdyU8n3twJwl1FgsAXHNlYzg.woff2") format("woff2");
+      unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+    }
+    @font-face {
+      font-family: "IBM Plex Mono";
+      font-style: normal;
+      font-weight: 500;
+      font-display: swap;
+      src: url("assets/fonts/captured--F6qfjptAgt5VM-kVkqdyU8n3twJwlRFgsAXHNlYzg.woff2") format("woff2");
+      unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+    }
+    @font-face {
+      font-family: "IBM Plex Mono";
+      font-style: normal;
+      font-weight: 500;
+      font-display: swap;
+      src: url("assets/fonts/captured--F6qfjptAgt5VM-kVkqdyU8n3twJwl9FgsAXHNlYzg.woff2") format("woff2");
+      unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+    }
+    @font-face {
+      font-family: "IBM Plex Mono";
+      font-style: normal;
+      font-weight: 500;
+      font-display: swap;
+      src: url("assets/fonts/captured--F6qfjptAgt5VM-kVkqdyU8n3twJwl5FgsAXHNlYzg.woff2") format("woff2");
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+    @font-face {
+      font-family: "IBM Plex Mono";
+      font-style: normal;
+      font-weight: 500;
+      font-display: swap;
+      src: url("assets/fonts/captured--F6qfjptAgt5VM-kVkqdyU8n3twJwlBFgsAXHNk.woff2") format("woff2");
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+
+    /* Root styled by #root (never a class). No background here — the full-bleed
+       ground rides on the .03-second-bg clip; the footage is hoisted to the
+       host root by assemble-index and lands ABOVE this root in host DOM order,
+       so anything meant to sit over the footage lives in .03-second-overlays
+       (z-index:5 escapes through the z-auto .scene/root chain into the host
+       stacking context and paints over the hoisted sibling video). */
+    #root {
+      position: absolute;
+      inset: 0;
+      container-type: size;
+    }
+    .clip {
+      position: absolute;
+      inset: 0;
+    }
+
+    /* Class tokens carry the required `03-second-` frame prefix — a leading
+       digit is legal in HTML class attributes but not in CSS identifiers, so
+       every rule below addresses the token through [class~="..."] instead of
+       `.03-second-…` (which drops the rule, and would throw in GSAP too). */
+    [class~="03-second-bg"] {
+      background: #0b0e1a;
+    }
+
+    /* ---------- overlay layer — must paint above the hoisted video ---------- */
+    [class~="03-second-overlays"] {
+      position: absolute;
+      inset: 0;
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    /* ---------- top chrome ---------- */
+    [class~="03-second-topbar"] {
+      position: absolute;
+      top: 52px;
+      left: 60px;
+      right: 60px;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+    [class~="03-second-kicker"] {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 16px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #f0a95c;
+    }
+    [class~="03-second-rail"] {
+      position: absolute;
+      top: 76px;
+      left: 60px;
+      right: 60px;
+      height: 1px;
+      background: #232b52;
+      transform-origin: left center;
+    }
+    [class~="03-second-progress"] {
+      position: absolute;
+      left: 0;
+      top: -1px;
+      width: 100%;
+      height: 2px;
+      background: #f0a95c;
+      transform-origin: left center;
+    }
+
+    /* ---------- score tick (payoff accent, lands with the commit) ---------- */
+    [class~="03-second-scoretick"] {
+      position: absolute;
+      top: 82px;
+      right: 60px;
+      width: 56px;
+      height: 2px;
+      background: #f0a95c;
+      transform-origin: right center;
+    }
+
+    /* ---------- callout plate — lower-left, above the 83% keep-out ---------- */
+    [class~="03-second-plate"] {
+      position: absolute;
+      left: 60px;
+      bottom: 192px; /* bottom edge ~y 888, above the ~896 keep-out */
+      padding: 15px 26px 16px 24px;
+      background: #0b0e1a;
+    }
+    [class~="03-second-stub"] {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: #f0a95c;
+      transform-origin: left bottom;
+    }
+    [class~="03-second-calltag"] {
+      display: block;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #f0a95c;
+      margin-bottom: 6px;
+    }
+    [class~="03-second-calltext"] {
+      display: block;
+      font-family: "Almendra", serif;
+      font-size: 30px;
+      font-weight: 700;
+      line-height: 1.05;
+      letter-spacing: -0.01em;
+      color: #f2ebdc;
+      white-space: nowrap;
+    }
+  </style>
+
+  <div data-hf-id="hf-lqy6" id="root" data-composition-id="03-second" data-width="1080" data-height="1080" data-duration="5.5">
+    <!-- ink-black ground — full-bleed on a clip layer, lowest lane -->
+    <div data-hf-id="hf-ss12" id="second-bg" class="clip 03-second-bg" data-start="0" data-duration="5.5" data-track-index="0"></div>
+
+    <!-- hero footage — approved for hoist to host root. Full-bleed cover, muted,
+         locked stage; data-media-start skips the static lead-in so the doppio
+         grab begins at frame 0 and the drop commits ~4.7s (source ~8.9s). -->
+    <!-- approved frame video hoisted by assemble-index -->
+
+    <!-- overlays — z-index layer paints above the hoisted video -->
+    <div data-hf-id="hf-6v0m" class="03-second-overlays">
+      <div data-hf-id="hf-6nkr" id="second-chrome" class="clip 03-second-chrome" data-start="0" data-duration="5.5" data-track-index="1">
+        <div data-hf-id="hf-7xnx" class="03-second-topbar">
+          <span data-hf-id="hf-uhar" class="03-second-kicker">HOW IT WORKS · 02</span>
+        </div>
+        <div data-hf-id="hf-fe2t" class="03-second-rail"><div data-hf-id="hf-ieqw" class="03-second-progress"></div></div>
+        <div data-hf-id="hf-35ji" class="03-second-scoretick"></div>
+      </div>
+
+      <div data-hf-id="hf-xilg" id="second-callout" class="clip 03-second-callout" data-start="0" data-duration="5.5" data-track-index="2">
+        <div data-hf-id="hf-btgr" class="03-second-plate">
+          <div data-hf-id="hf-z7rx" class="03-second-stub"></div>
+          <span data-hf-id="hf-zyzr" class="03-second-calltag">DOPPIO +126MG</span>
+          <span data-hf-id="hf-ll01" class="03-second-calltext">every cup still counts at bedtime</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true });
+
+    // Attribute selectors — see the stylesheet note: `.03-second-*` class
+    // selectors are invalid CSS (leading digit), so GSAP targets use
+    // [class~="..."] to reach the same frame-prefixed tokens.
+    // Scene 1 (0.0–0.8s) — footage establishes; kicker + hairline chrome land.
+    tl.fromTo(
+      '[class~="03-second-topbar"]',
+      { opacity: 0, y: -10 },
+      { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" },
+      0.12,
+    );
+    tl.fromTo(
+      '[class~="03-second-rail"]',
+      { scaleX: 0 },
+      { scaleX: 1, duration: 0.6, ease: "power2.out" },
+      0.3,
+    );
+
+    // Scene 2 (0.8–4.2s) — the doppio drag crosses the column on the footage;
+    // the orange progress fill tracks the drag and completes at the commit.
+    tl.fromTo(
+      '[class~="03-second-progress"]',
+      { scaleX: 0 },
+      { scaleX: 1, duration: 3.92, ease: "none" },
+      0.8,
+    );
+
+    // Scene 3 (4.2–5.5s) — drop commits (~4.7): callout lands as the score
+    // locks and the ghost swells; score tick marks the payoff, then hold.
+    tl.fromTo(
+      '[class~="03-second-callout"]',
+      { opacity: 0, y: 14 },
+      { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" },
+      4.55,
+    );
+    tl.fromTo(
+      '[class~="03-second-stub"]',
+      { scaleY: 0 },
+      { scaleY: 1, duration: 0.45, ease: "power3.out" },
+      4.6,
+    );
+    tl.fromTo(
+      '[class~="03-second-calltag"]',
+      { opacity: 0 },
+      { opacity: 1, duration: 0.3, ease: "power2.out" },
+      4.68,
+    );
+    // commit flash — the rail line snaps brighter as the drop lands
+    tl.to('[class~="03-second-progress"]', { scaleY: 2, duration: 0.12, ease: "power1.in" }, 4.72);
+    tl.to('[class~="03-second-progress"]', { scaleY: 1, duration: 0.18, ease: "power2.out" }, 4.86);
+    // score tick stamps under the locked score
+    tl.fromTo(
+      '[class~="03-second-scoretick"]',
+      { scaleX: 0, opacity: 0 },
+      { scaleX: 1, opacity: 1, duration: 0.35, ease: "power3.out" },
+      4.85,
+    );
+
+    // full-span anchor so the registered timeline covers the frame exactly
+    tl.to({}, { duration: 5.5 }, 0);
+    window.__timelines["03-second"] = tl;
+    tl.seek(0);
+  </script>
+</template>

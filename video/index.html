@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1080, height=1080">
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js" integrity="sha384-sG0Hv1tP1lZCk9KQmrIbY/XNwi+OY84GQqhMscbnsoBFqAz8KNCil1kvfL3Hbbk2" crossorigin="anonymous"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1080px;
+        height: 1080px;
+        overflow: hidden;
+        background: #000;
+      }
+      #root {
+        position: relative;
+        width: 1080px;
+        height: 1080px;
+        overflow: hidden;
+        background: #F2EBDC;
+      }
+      .scene {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div data-hf-id="hf-le0u" id="root" data-composition-id="main" data-start="0" data-duration="29" data-width="1080" data-height="1080">
+      <div data-hf-id="hf-v3ze" id="el-01-hook" class="scene" data-composition-id="01-hook" data-composition-src="compositions/frames/01-hook.html" data-start="0" data-duration="4" data-track-index="0"></div>
+
+      <div data-hf-id="hf-8k2s" id="el-02-drop" class="scene" data-composition-id="02-drop" data-composition-src="compositions/frames/02-drop.html" data-start="4" data-duration="6" data-track-index="1"></div>
+
+      <div data-hf-id="hf-beay" id="el-03-second" class="scene" data-composition-id="03-second" data-composition-src="compositions/frames/03-second.html" data-start="10" data-duration="5.5" data-track-index="0"></div>
+
+      <div data-hf-id="hf-logm" id="el-04-bedtime" class="scene" data-composition-id="04-bedtime" data-composition-src="compositions/frames/04-bedtime.html" data-start="15.5" data-duration="6" data-track-index="1"></div>
+
+      <div data-hf-id="hf-4sbw" id="el-05-share" class="scene" data-composition-id="05-share" data-composition-src="compositions/frames/05-share.html" data-start="21" data-duration="4.5" data-track-index="0"></div>
+
+      <div data-hf-id="hf-q545" id="el-06-end" class="scene" data-composition-id="06-end" data-composition-src="compositions/frames/06-end.html" data-start="25" data-duration="4" data-track-index="1"></div>
+
+      <video data-hf-id="hf-2bwy" id="01-hook-video" src="assets/footage/hook.mp4" preload="auto" data-media-start="0.1" muted playsinline class="clip" style="position:absolute;left:0px;top:0px;width:1080px;height:1080px;object-fit:cover" data-start="0" data-duration="4" data-track-index="1001"></video>
+
+      <video data-hf-id="hf-t0h1" id="02-drop-hero" src="assets/footage/drop.mp4" preload="auto" data-media-start="5" muted playsinline class="clip" style="position:absolute;left:0px;top:0px;width:1080px;height:1080px;object-fit:cover" data-start="4" data-duration="6" data-track-index="2001"></video>
+
+      <video data-hf-id="hf-7dow" id="second-footage" src="assets/footage/second.mp4" preload="auto" data-media-start="4.2" muted playsinline class="clip" style="position:absolute;left:0px;top:0px;width:1080px;height:1080px;object-fit:cover" data-start="10" data-duration="5.5" data-track-index="3003"></video>
+
+      <video data-hf-id="hf-z29p" id="el-04-bedtime-video-3" src="assets/footage/bedtime.mp4" preload="auto" data-media-start="1.4" muted playsinline class="clip" style="position:absolute;left:0px;top:0px;width:1080px;height:1080px;object-fit:cover" data-start="15.5" data-duration="5.5" data-track-index="4001"></video>
+
+      <video data-hf-id="hf-k9zu" id="share-video" src="assets/footage/share.mp4" preload="auto" data-media-start="2.2" muted playsinline class="clip" style="position:absolute;left:0px;top:0px;width:1080px;height:1080px;object-fit:cover" data-start="21" data-duration="4" data-track-index="5001"></video>
+
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = gsap.timeline({ paused: true });
+      // ── frame transitions (injected by transitions.mjs) ──
+      (function () { var tl = window.__timelines["main"];
+        tl.to("#el-04-bedtime", { opacity: 0, duration: 0.5, ease: "power2.inOut" }, 21);
+        tl.fromTo("#el-05-share", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power2.inOut" }, 21);
+        tl.to("#el-05-share", { opacity: 0, duration: 0.5, ease: "power2.inOut" }, 25);
+        tl.fromTo("#el-06-end", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power2.inOut" }, 25);
+        tl.to({}, { duration: 29 }, 0); // full-span anchor — main.duration() == composition total (Studio master duration)
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,5 @@
+.hyperframes/
+.media/
+snapshots/
+renders/
+*.webm
